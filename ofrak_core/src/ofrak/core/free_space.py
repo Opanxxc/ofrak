@@ -430,8 +430,8 @@ class RemoveFreeSpaceModifier(Modifier[FreeSpaceAllocation]):
                 fs_offset_in_parent = (await fs.resource.get_data_range_within_parent()).start
                 for remaining_range in remaining_free_space_ranges:
                     remaining_data_range = Range.from_size(
-                        fs_offset_in_parent + fs.get_offset_in_self(remaining_range.start), 
-                        remaining_range.length()
+                        fs_offset_in_parent + fs.get_offset_in_self(remaining_range.start),
+                        remaining_range.length(),
                     )
                     await parent.create_child_from_view(
                         FreeSpace(
