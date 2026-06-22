@@ -26,7 +26,7 @@ def _parse_offset(java_object):
 
 async def _compute_cache_key(resource, language, memory_regions, base_address):
     """Compute a stable MD5 hash from all inputs that affect Ghidra analysis."""
-    h = hashlib.md5()
+    h = hashlib.md5(usedforsecurity=False)
     h.update(await resource.get_data())
     if language:
         h.update(language.encode())
