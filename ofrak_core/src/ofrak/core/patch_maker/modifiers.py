@@ -22,7 +22,7 @@ from ofrak.model.component_model import ComponentConfig
 from ofrak.resource import Resource
 from ofrak.service.resource_service_i import ResourceFilter, ResourceSort, ResourceSortDirection
 from ofrak_type.memory_permissions import MemoryPermissions
-from ofrak_type.error import NotFoundError
+from ofrak_type.range import Range
 
 LOGGER = logging.getLogger(__file__)
 
@@ -264,24 +264,33 @@ class SegmentInjectorModifier(Modifier[SegmentInjectorModifierConfig]):
                 # See PatchFromSourceModifier
                 continue
 
-            try:
-                region = MemoryRegion.get_mem_region_with_vaddr_from_sorted(
-                    segment.vm_address, sorted_regions
-                )
-            except NotFoundError:
+            # Look for region to patch, preferably with data:
+            candidate = None
+            for mem_view in sorted_regions:
+                # the first region we find should be the largest
+                if mem_view.contains(segment.vm_address):
+                    if not candidate:
+                        candidate = mem_view
+                    elif candidate.resource.get_data_id() is None:
+                        candidate = mem_view
+                    if (
+                        candidate.resource.get_data_id()
+                    ):  # break once we find a candidate that has data
+                        break
+            if not candidate:
                 # uninitialized section like .bss mapped to arbitrary memory range without corresponding
                 # MemoryRegion resource, no patch needed.
                 if segment.is_bss:
                     continue
                 raise
 
-            region_mapped_to_data = region.resource.get_data_id() is not None
+            region_mapped_to_data = candidate.resource.get_data_id() is not None
             if region_mapped_to_data:
-                range_in_root = await region.resource.get_data_range_within_root()
-                offset = range_in_root.start + segment.vm_address - region.virtual_address
+                range_in_root = await candidate.resource.get_data_range_within_root()
+                offset = range_in_root.start + segment.vm_address - candidate.virtual_address
                 patches.append((offset, segment_data))
                 patch_vaddr_ranges.append(Range.from_size(segment.vm_address, segment.length))
-                target_region_ids.add(region.resource.get_id())
+                target_region_ids.add(candidate.resource.get_id())
             else:
                 if segment.is_bss:
                     # uninitialized section like .bss mapped to arbitrary memory range without corresponding

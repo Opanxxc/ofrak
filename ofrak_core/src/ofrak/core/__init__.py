@@ -28,6 +28,7 @@ from ofrak.core.complex_block import *
 from ofrak.core.cpio import *
 from ofrak.core.cramfs import *
 from ofrak.core.data import *
+from ofrak.core.docker import *
 from ofrak.core.dtb import *
 from ofrak.core.filesystem import *
 from ofrak.core.flash import *
@@ -59,6 +60,7 @@ from ofrak.core.ubi import *
 from ofrak.core.ubifs import *
 from ofrak.core.uf2 import *
 from ofrak.core.uimage import *
+from ofrak.core.yaffs import *
 from ofrak.core.zip import *
 from ofrak.core.zlib import *
 from ofrak.core.zstd import *
