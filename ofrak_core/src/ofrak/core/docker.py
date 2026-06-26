@@ -106,6 +106,10 @@ class DockerImageUnpacker(Unpacker[None]):
                 with open(manifest_path) as f:
                     manifest = json.load(f)
 
+                if len(manifest) > 1:
+                    LOGGER.warning(
+                        f"Tar ball contains more than one image, will only extract the first one."
+                    )
                 layers = manifest[0]["Layers"]
 
                 with tempfile.TemporaryDirectory() as merged_dir:
@@ -153,7 +157,7 @@ class DockerImageUnpacker(Unpacker[None]):
 
         opaque_dirs: List[str] = []
         for entry in stdout.decode().splitlines():
-            entry = entry.strip("/")
+            entry = os.path.normpath(entry.strip("/"))
             basename = os.path.basename(entry)
             if basename == _OPAQUE_WHITEOUT:
                 parent = os.path.dirname(entry)
@@ -169,7 +173,7 @@ class DockerImagePacker(Packer[None]):
 
     targets = (DockerImage,)
 
-    async def pack(self, resource: Resource, config=None) -> None:
+    async def pack(self, resource: Resource, config=None) -> None:  # pragma: no cover
         raise NotImplementedError(
             "Packing a DockerImage back into a Docker image tarball is not supported. "
             "The current unpacker merges all layers into a single filesystem, so the original "

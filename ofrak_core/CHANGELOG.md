@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### Added
 - Add FastSegmentInjectorModifier for optimized bulk segment injection ([#685](https://github.com/redballoonsecurity/ofrak/pull/685))
+- Add DockerImage components (identifier and unpacker) ([#715](https://github.com/redballoonsecurity/ofrak/pull/715))
 - Add `FlashGeometryHeuristicAnalyzer` that infers `FlashAttributes` (page/OOB geometry) for raw NAND dumps tagged as `FlashResource`, using YAFFS2, Linux MTD large-page OOB, small-page OOB density, and exact Hamming ECC verification as signals ([#737](https://github.com/redballoonsecurity/ofrak/pull/737))
 - Add `FlashFieldType.SPARE` and `FlashSpareAreaResource` so `FlashOobResourceUnpacker` can preserve OOB bytes without ECC/Checksum computation, and extend `FlashLogicalDataResourcePacker` to consume the sibling `FlashSpareAreaResource` so the original OOB layout is reconstructed verbatim during repacking ([#738](https://github.com/redballoonsecurity/ofrak/pull/738))
 - Add cramfs unpacker and packer, using `fsck.cramfs` and `mkfs.cramfs` from `util-linux` 2.38.1 ([#719](https://github.com/redballoonsecurity/ofrak/pull/719))
@@ -24,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - Remove test dependencies that are already in the global `requirements-dev.txt` ([#695](https://github.com/redballoonsecurity/ofrak/pull/695))
 
 ### Fixed
+- Remove libmagic 5.46 pin as the pinned manifest is not compatible with latest brew and libmagic 5.48 fixes the original regression ([#755](https://github.com/redballoonsecurity/ofrak/pull/755))
 - Fix thread-unsafe `os.chdir` in `ZipPacker` by passing `cwd` to subprocess ([#721](https://github.com/redballoonsecurity/ofrak/pull/721))
 - Pin libmagic to 5.46 on macOS CI builds to work around a regression in 5.47 that breaks ELF identification; update documentation to reflect the libmagic 5.46 requirement ([#723](https://github.com/redballoonsecurity/ofrak/pull/723))
 - Bump `aiohttp` to >=3.13.3 to address CVE-2025-69223 ([#693](https://github.com/redballoonsecurity/ofrak/pull/693))
@@ -35,6 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - Pin Pygments==2.19.2 for OFRAK docs ([#728](https://github.com/redballoonsecurity/ofrak/pull/728))
 - Fix typo in `find` command used by CPIO packer ([#740](https://github.com/redballoonsecurity/ofrak/pull/740))
 - Fix bug in Segment Injector: favor regions with data when injecting data ([#682](https://github.com/redballoonsecurity/ofrak/pull/682))
+- Pass `usedforsecurity=False` to non-cryptographic `hashlib` calls to prevent failures when Python links against FIPS OpenSSL ([#744](https://github.com/redballoonsecurity/ofrak/pull/744))
+- Fix `chdir` in UEFI components causing failing tests. ([#747](https://github.com/redballoonsecurity/ofrak/pull/747))
+- Fix bug in `ISO9660Unpacker` for files in root directory. ([#750](https://github.com/redballoonsecurity/ofrak/pull/750))
+- Fix binwalk and entropy file descriptor leak. ([#749](https://github.com/redballoonsecurity/ofrak/pull/749))
 
 ## [3.3.0](https://github.com/redballoonsecurity/ofrak/compare/ofrak-v3.2.0...ofrak-v3.3.0) - 2025-10-03
 
