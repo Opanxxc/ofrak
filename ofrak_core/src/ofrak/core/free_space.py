@@ -385,6 +385,8 @@ class RemoveFreeSpaceModifier(Modifier[FreeSpaceAllocation]):
                 AnyFreeSpace,
                 r_filter=ResourceFilter(
                     tags=(AnyFreeSpace,),
+                    # ResourceAttributeRangeFilter min is inclusive, max is exclusive.
+                    # +1 on EndVaddr bounds converts to the inclusive <= / exclusive > we need.
                     attribute_filters=(
                         ResourceAttributeValueFilter(
                             AnyFreeSpace.Permissions, config.permissions.value
@@ -392,10 +394,10 @@ class RemoveFreeSpaceModifier(Modifier[FreeSpaceAllocation]):
                         ResourceAttributeRangeFilter(
                             AnyFreeSpace.VirtualAddress,
                             min=alloc.start,
-                            max=alloc.end - 1,
+                            max=alloc.end,
                         ),
                         ResourceAttributeRangeFilter(
-                            AnyFreeSpace.EndVaddr, min=alloc.start + 1, max=alloc.end
+                            AnyFreeSpace.EndVaddr, min=alloc.start + 1, max=alloc.end + 1
                         ),
                     ),
                 ),
