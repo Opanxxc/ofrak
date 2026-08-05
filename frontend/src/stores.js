@@ -1,6 +1,6 @@
 import { animals, otherColors } from "./animals.js";
 
-import { writable } from "svelte/store";
+import { writable, derived } from "svelte/store";
 
 // Currently selected resource ID
 export const selected = writable(undefined);
@@ -49,6 +49,28 @@ export function loadSettings(forceReset) {
 }
 
 export let settings = writable(loadSettings());
+
+// The base URL every backend request is built on. An explicit `backendUrl`
+// setting (a separate host/port) wins; otherwise it is derived from the path
+// the GUI is served under, so requests reach the backend whether the app is at
+// the origin root (`""`) or reverse-proxied under a subpath
+// (`/some/prefix`). Deriving here — rather than defaulting the persisted
+// setting — keeps a per-deployment subpath out of saved settings, so it can
+// never leak between contexts that share an origin.
+function servedBasePath() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+  // Directory the current document was served from (strip the file segment),
+  // then drop the trailing slash so callers append `/<route>`.
+  const dir = window.location.pathname.replace(/[^/]*$/, "");
+  return dir.replace(/\/$/, "");
+}
+
+export const backendUrl = derived(
+  settings,
+  ($settings) => $settings.backendUrl || servedBasePath()
+);
 
 export let resourceNodeDataMap = writable({});
 

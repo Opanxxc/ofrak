@@ -93,7 +93,7 @@
     selected,
     selectedResource,
     selectedProject,
-    settings,
+    backendUrl,
     resourceNodeDataMap,
   } from "../stores";
   import { onMount } from "svelte";
@@ -120,7 +120,7 @@
 
   $: if (projectScript) {
     fetch(
-      `${$settings.backendUrl}/get_project_script?project=${$selectedProject.session_id}&script=${projectScript}`
+      `${$backendUrl}/get_project_script?project=${$selectedProject.session_id}&script=${projectScript}`
     ).then((r) => {
       if (!r.ok) {
         throw Error(r.statusText);
@@ -253,11 +253,11 @@
   <div class="actions">
     <Button on:click="{() => (runScriptPromise = runLoadedScript())}">
       {#await runScriptPromise}
-        <Icon url="/icons/loading.svg" />
+        <Icon url="icons/loading.svg" />
       {:then _}
         <!---->
       {:catch _}
-        <Icon url="/icons/error.svg" />
+        <Icon url="icons/error.svg" />
       {/await}
       Run script
     </Button>

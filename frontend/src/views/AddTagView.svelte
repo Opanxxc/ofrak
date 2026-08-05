@@ -71,7 +71,7 @@
   import {
     selected,
     selectedResource,
-    settings,
+    backendUrl,
     resourceNodeDataMap,
   } from "../stores.js";
   import Button from "../utils/Button.svelte";
@@ -109,7 +109,7 @@
 
   onMount(async () => {
     try {
-      await fetch(`${$settings.backendUrl}/get_all_tags`).then(async (r) => {
+      await fetch(`${$backendUrl}/get_all_tags`).then(async (r) => {
         if (!r.ok) {
           throw Error(JSON.stringify(await r.json(), undefined, 2));
         }

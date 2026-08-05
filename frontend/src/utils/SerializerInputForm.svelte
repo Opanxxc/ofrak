@@ -251,7 +251,7 @@
           --button-padding="0.5em 1em 0em 1em"
           on:click="{addElementToArray}"
         >
-          <Icon url="/icons/plus.svg" />
+          <Icon url="icons/plus.svg" />
         </Button>
       </div>
       {#each _element as elements}
@@ -265,7 +265,7 @@
                   skip = skip;
                 }}"
               >
-                <Icon url="/icons/error.svg" />
+                <Icon url="icons/error.svg" />
               </Button>
             </div>
             <svelte:self node="{node['args'][0]}" bind:element="{elements}" />
@@ -286,7 +286,7 @@
           --button-padding="0.5em 1em 0em 1em"
           on:click="{addElementToDict}"
         >
-          <Icon url="/icons/plus.svg" />
+          <Icon url="icons/plus.svg" />
         </Button>
       </div>
       {#each _element as elements, index}
@@ -300,7 +300,7 @@
                   skip = skip;
                 }}"
               >
-                <Icon url="/icons/error.svg" />
+                <Icon url="icons/error.svg" />
               </Button>
               {elements}
             </div>

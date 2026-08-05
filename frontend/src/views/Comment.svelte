@@ -72,7 +72,7 @@
     <button title="Delete this comment" on:click="{onDeleteClick(comment)}">
       <Icon
         class="comment_icon"
-        url="{hovering ? '/icons/trash_can.svg' : '/icons/comment.svg'}"
+        url="{hovering ? 'icons/trash_can.svg' : 'icons/comment.svg'}"
       />
     </button></Hoverable
   >

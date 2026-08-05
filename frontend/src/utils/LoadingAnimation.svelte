@@ -27,7 +27,7 @@
 </style>
 
 <script context="module">
-  const animations = ["/loading/cubes.spline", "/loading/stacks.spline"];
+  const animations = ["loading/cubes.spline", "loading/stacks.spline"];
   let currentIndex = 0;
 
   let animationData = [];

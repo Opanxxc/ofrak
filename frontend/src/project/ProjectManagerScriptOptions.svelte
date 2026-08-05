@@ -21,7 +21,7 @@
 </style>
 
 <script>
-  import { selectedProject, settings, selected } from "../stores";
+  import { selectedProject, backendUrl, selected } from "../stores";
   import Script from "../utils/Script.svelte";
   import Toolbar from "../utils/Toolbar.svelte";
   import LoadingAnimation from "../utils/LoadingAnimation.svelte";
@@ -30,7 +30,7 @@
   let showScriptPromise = new Promise(() => {});
 
   async function deleteScript() {
-    await fetch(`${$settings.backendUrl}/delete_script_from_project`, {
+    await fetch(`${$backendUrl}/delete_script_from_project`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -44,7 +44,7 @@
         throw Error(JSON.stringify(await r.json(), undefined, 2));
       }
       $selectedProject = await fetch(
-        `${$settings.backendUrl}/get_project_by_id?id=${$selectedProject.session_id}`
+        `${$backendUrl}/get_project_by_id?id=${$selectedProject.session_id}`
       ).then((r) => {
         if (!r.ok) {
           throw Error(r.statusText);
@@ -56,7 +56,7 @@
   }
 
   $: showScriptPromise = fetch(
-    `${$settings.backendUrl}/get_project_script?project=${$selectedProject.session_id}&script=${args.name}`
+    `${$backendUrl}/get_project_script?project=${$selectedProject.session_id}&script=${args.name}`
   ).then(async (r) => {
     if (!r.ok) {
       throw Error(r.statusText);
@@ -67,7 +67,7 @@
   let toolbarButtons = [
     {
       text: "Delete Script",
-      iconUrl: "/icons/trash.svg",
+      iconUrl: "icons/trash.svg",
       shortcut: "D",
       onclick: () => {
         deleteScript;

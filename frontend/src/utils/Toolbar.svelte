@@ -21,7 +21,7 @@
   function wrapOnCick(button) {
     return async (e) => {
       const oldIcon = button.iconUrl;
-      button.iconUrl = "/icons/loading.svg";
+      button.iconUrl = "icons/loading.svg";
       toolbarButtons = toolbarButtons;
       await button
         .onclick(e)
@@ -30,7 +30,7 @@
           toolbarButtons = toolbarButtons;
         })
         .catch((e) => {
-          button.iconUrl = "/icons/error.svg";
+          button.iconUrl = "icons/error.svg";
           toolbarButtons = toolbarButtons;
           try {
             let errorObject = JSON.parse(e.message);

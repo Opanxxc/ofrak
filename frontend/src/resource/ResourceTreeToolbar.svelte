@@ -35,7 +35,7 @@
     experimentalFeatures = [
       {
         text: "Run Component",
-        iconUrl: "/icons/run.svg",
+        iconUrl: "icons/run.svg",
         onclick: async (e) => {
           modifierView = ComponentsView;
         },
@@ -43,7 +43,7 @@
 
       {
         text: "Run Script",
-        iconUrl: "/icons/run_script.svg",
+        iconUrl: "icons/run_script.svg",
         onclick: async (e) => {
           modifierView = RunScriptView;
         },
@@ -55,7 +55,7 @@
     projectFeatures = [
       {
         text: "Project Manager",
-        iconUrl: "/icons/briefcase.svg",
+        iconUrl: "icons/briefcase.svg",
         onclick: async (e) => {
           if ($selectedProject) {
             let state = {
@@ -74,7 +74,7 @@
     toolbarButtons = [
       {
         text: "Identify",
-        iconUrl: "/icons/identify.svg",
+        iconUrl: "icons/identify.svg",
         shortcut: "i",
         onclick: async (e) => {
           await rootResource.identify();
@@ -91,7 +91,7 @@
 
       {
         text: "Unpack",
-        iconUrl: "/icons/unpack.svg",
+        iconUrl: "icons/unpack.svg",
         shortcut: "u",
         onclick: async (e) => {
           await rootResource.unpack();
@@ -107,7 +107,7 @@
 
       {
         text: "Carve Child",
-        iconUrl: "/icons/carve.svg",
+        iconUrl: "icons/carve.svg",
         onclick: async (e) => {
           modifierView = CarveView;
         },
@@ -115,7 +115,7 @@
 
       {
         text: "Analyze",
-        iconUrl: "/icons/analyze.svg",
+        iconUrl: "icons/analyze.svg",
         shortcut: "a",
         onclick: async (e) => {
           await rootResource.analyze();
@@ -132,7 +132,7 @@
 
       {
         text: "Modify",
-        iconUrl: "/icons/modify.svg",
+        iconUrl: "icons/modify.svg",
         onclick: async (e) => {
           modifierView = ModifyView;
         },
@@ -140,7 +140,7 @@
 
       {
         text: "Pack",
-        iconUrl: "/icons/pack.svg",
+        iconUrl: "icons/pack.svg",
         shortcut: "p",
         onclick: async (e) => {
           const descendants = await $selectedResource.get_descendants();
@@ -158,7 +158,7 @@
 
       {
         text: "Add Tag",
-        iconUrl: "/icons/tag.svg",
+        iconUrl: "icons/tag.svg",
         onclick: async (e) => {
           modifierView = AddTagView;
         },
@@ -166,7 +166,7 @@
 
       {
         text: "Add ProgramAttributes",
-        iconUrl: "/icons/program_attributes.svg",
+        iconUrl: "icons/program_attributes.svg",
         onclick: async (e) => {
           modifierView = AddProgramAttributesView;
         },
@@ -174,7 +174,7 @@
 
       {
         text: "Download",
-        iconUrl: "/icons/download.svg",
+        iconUrl: "icons/download.svg",
         onclick: async (e) => {
           if ($selected !== undefined) {
             const data = await rootResource.get_data();
@@ -205,7 +205,7 @@
 
       {
         text: "Replace",
-        iconUrl: "/icons/upload.svg",
+        iconUrl: "icons/upload.svg",
         onclick: async (e) => {
           if ($selected !== undefined) {
             const input = document.createElement("input");
@@ -236,17 +236,19 @@
 
       {
         text: "New",
-        iconUrl: "/icons/new.svg",
+        iconUrl: "icons/new.svg",
         shortcut: "n",
         onclick: (e) => {
-          // Clear the URL fragment
-          window.location.replace("/");
+          // Clear the URL fragment, returning to the served base — not the
+          // origin root, which under a reverse-proxy subpath would navigate
+          // out of the embedded GUI entirely.
+          window.location.replace(window.location.pathname);
         },
       },
 
       {
         text: "Identify Recursively",
-        iconUrl: "/icons/identify.svg",
+        iconUrl: "icons/identify.svg",
         shortcut: "i+Shift",
         onclick: async (e) => {
           await rootResource.identify_recursively();
@@ -261,7 +263,7 @@
 
       {
         text: "Unpack Recursively",
-        iconUrl: "/icons/unpack_r.svg",
+        iconUrl: "icons/unpack_r.svg",
         shortcut: "u+Shift",
         onclick: async (e) => {
           await rootResource.unpack_recursively();
@@ -277,7 +279,7 @@
 
       {
         text: "Pack Recursively",
-        iconUrl: "/icons/pack_r.svg",
+        iconUrl: "icons/pack_r.svg",
         shortcut: "p+Shift",
         onclick: async (e) => {
           const descendants = await $selectedResource.get_descendants();
@@ -295,7 +297,7 @@
 
       {
         text: "Add comment",
-        iconUrl: "/icons/comment.svg",
+        iconUrl: "icons/comment.svg",
         onclick: async (e) => {
           modifierView = CommentView;
         },
@@ -303,7 +305,7 @@
 
       {
         text: "Search",
-        iconUrl: "/icons/identify.svg",
+        iconUrl: "icons/identify.svg",
         onclick: async (e) => {
           modifierView = SearchView;
         },
@@ -311,7 +313,7 @@
 
       {
         text: "Show Script",
-        iconUrl: "/icons/document.svg",
+        iconUrl: "icons/document.svg",
         onclick: async (e) => {
           bottomLeftPane = ScriptView;
         },
@@ -319,7 +321,7 @@
 
       {
         text: "Settings",
-        iconUrl: "/icons/settings.svg",
+        iconUrl: "icons/settings.svg",
         onclick: async (e) => {
           modifierView = SettingsView;
         },

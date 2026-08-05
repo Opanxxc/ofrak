@@ -142,6 +142,7 @@
   import {
     selected,
     settings,
+    backendUrl,
     selectedProject,
     resourceNodeDataMap,
   } from "../stores.js";
@@ -175,7 +176,7 @@
   async function sendChunk(id, f, start) {
     let end = Math.min(start + fileChunkSize, f.size);
     await fetch(
-      `${$settings.backendUrl}/root_resource_chunk?id=${id}&start=${start}&end=${end}`,
+      `${$backendUrl}/root_resource_chunk?id=${id}&start=${start}&end=${end}`,
       {
         method: "POST",
         body: await f.slice(start, end),
@@ -198,7 +199,7 @@
     }
     if (f.size > warnFileSize) {
       let id = await fetch(
-        `${$settings.backendUrl}/init_chunked_root_resource?name=${f.name}&size=${f.size}`,
+        `${$backendUrl}/init_chunked_root_resource?name=${f.name}&size=${f.size}`,
         { method: "POST" }
       ).then((r) => r.json());
       let chunkStartAddrs = Array.from(
@@ -210,14 +211,14 @@
       );
 
       rootModel = await fetch(
-        `${$settings.backendUrl}/create_chunked_root_resource?id=${id}&name=${f.name}`,
+        `${$backendUrl}/create_chunked_root_resource?id=${id}&name=${f.name}`,
         {
           method: "POST",
         }
       ).then((r) => r.json());
     } else {
       rootModel = await fetch(
-        `${$settings.backendUrl}/create_root_resource?name=${f.name}`,
+        `${$backendUrl}/create_root_resource?name=${f.name}`,
         {
           method: "POST",
           body: await f.arrayBuffer(),
@@ -244,7 +245,7 @@
   }
 
   async function createNewProject() {
-    let result = await fetch(`${$settings.backendUrl}/create_new_project`, {
+    let result = await fetch(`${$backendUrl}/create_new_project`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -259,7 +260,7 @@
       return r.json();
     });
     $selectedProject = await fetch(
-      `${$settings.backendUrl}/get_project_by_id?id=${result.id}`
+      `${$backendUrl}/get_project_by_id?id=${result.id}`
     ).then((r) => {
       if (!r.ok) {
         throw Error(r.statusText);
@@ -270,7 +271,7 @@
   }
 
   async function cloneProjectFromGit() {
-    let result = await fetch(`${$settings.backendUrl}/clone_project_from_git`, {
+    let result = await fetch(`${$backendUrl}/clone_project_from_git`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -295,7 +296,7 @@
         console.error(e);
       });
     $selectedProject = await fetch(
-      `${$settings.backendUrl}/get_project_by_id?id=${result.id}`
+      `${$backendUrl}/get_project_by_id?id=${result.id}`
     ).then((r) => {
       if (!r.ok) {
         throw Error(r.statusText);
@@ -306,7 +307,7 @@
   }
 
   async function changeProjectPath() {
-    let result = await fetch(`${$settings.backendUrl}/set_projects_path`, {
+    let result = await fetch(`${$backendUrl}/set_projects_path`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -330,11 +331,11 @@
         }
         console.error(e);
       });
-    projectPath = await fetch(`${$settings.backendUrl}/get_projects_path`).then(
-      (r) => r.json()
+    projectPath = await fetch(`${$backendUrl}/get_projects_path`).then((r) =>
+      r.json()
     );
     preExistingProjectsPromise = await fetch(
-      `${$settings.backendUrl}/get_all_projects`
+      `${$backendUrl}/get_all_projects`
     ).then((r) => r.json());
   }
 
@@ -355,19 +356,7 @@
   }
 
   async function getResourcesFromHash(resourceId) {
-    const root = await fetch(
-      `${$settings.backendUrl}/${resourceId}/get_root`
-    ).then((r) => {
-      if (!r.ok) {
-        throw Error(r.statusText);
-      }
-      return r.json();
-    });
-
-    rootResource = remote_model_to_resource(root, resources);
-    $selected = root.id;
-
-    let resource = await fetch(`${$settings.backendUrl}/${resourceId}/`).then(
+    const root = await fetch(`${$backendUrl}/${resourceId}/get_root`).then(
       (r) => {
         if (!r.ok) {
           throw Error(r.statusText);
@@ -375,20 +364,30 @@
         return r.json();
       }
     );
+
+    rootResource = remote_model_to_resource(root, resources);
+    $selected = root.id;
+
+    let resource = await fetch(`${$backendUrl}/${resourceId}/`).then((r) => {
+      if (!r.ok) {
+        throw Error(r.statusText);
+      }
+      return r.json();
+    });
     resources[resource.id] = remote_model_to_resource(resource, resources);
     if ($resourceNodeDataMap[resource.id] === undefined) {
       $resourceNodeDataMap[resource.id] = {};
     }
     $resourceNodeDataMap[resource.id].collapsed = false;
     while (resource.parent_id) {
-      resource = await fetch(
-        `${$settings.backendUrl}/${resource.parent_id}/`
-      ).then((r) => {
-        if (!r.ok) {
-          throw Error(r.statusText);
+      resource = await fetch(`${$backendUrl}/${resource.parent_id}/`).then(
+        (r) => {
+          if (!r.ok) {
+            throw Error(r.statusText);
+          }
+          return r.json();
         }
-        return r.json();
-      });
+      );
       resources[resource.id] = remote_model_to_resource(resource, resources);
 
       if ($resourceNodeDataMap[resource.id] === undefined) {
@@ -401,7 +400,7 @@
     rootResourceLoadPromise = Promise.resolve(undefined);
     $selected = resourceId;
     $selectedProject = await fetch(
-      `${$settings.backendUrl}/${resourceId}/get_project_by_resource_id`
+      `${$backendUrl}/${resourceId}/get_project_by_resource_id`
     ).then((r) => {
       if (!r.ok) {
         throw Error(r.statusText);
@@ -417,19 +416,22 @@
     const linkedId = window.location.hash.slice(1);
     getResourcesFromHash(linkedId).catch((error) => {
       console.error(error);
-      window.location.replace("/");
+      // Back to the start screen at the served base (drop the failed hash),
+      // not the origin root — which under a reverse-proxy subpath would
+      // navigate out of the embedded GUI entirely.
+      window.location.replace(window.location.pathname);
     });
   }
 
   onMount(async () => {
     preExistingRootsPromise = await fetch(
-      `${$settings.backendUrl}/get_root_resources`
+      `${$backendUrl}/get_root_resources`
     ).then((r) => r.json());
-    projectPath = await fetch(`${$settings.backendUrl}/get_projects_path`).then(
-      (r) => r.json()
+    projectPath = await fetch(`${$backendUrl}/get_projects_path`).then((r) =>
+      r.json()
     );
     preExistingProjectsPromise = await fetch(
-      `${$settings.backendUrl}/get_all_projects`
+      `${$backendUrl}/get_all_projects`
     ).then((r) => r.json());
   });
 </script>
@@ -529,7 +531,7 @@
             on:click="{async (e) => {
               e.stopPropagation();
               $selectedProject = await fetch(
-                `${$settings.backendUrl}/${selectedPreExistingRoot.id}/get_project_by_resource_id`
+                `${$backendUrl}/${selectedPreExistingRoot.id}/get_project_by_resource_id`
               ).then((r) => {
                 if (!r.ok) {
                   throw Error(r.statusText);

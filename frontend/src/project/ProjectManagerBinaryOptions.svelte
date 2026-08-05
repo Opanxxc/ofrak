@@ -15,13 +15,13 @@
 </style>
 
 <script>
-  import { selectedProject, settings, selected } from "../stores";
+  import { selectedProject, backendUrl, selected } from "../stores";
   import Toolbar from "../utils/Toolbar.svelte";
 
   export let args, selectedBinaryName, forceRefreshProject;
 
   async function deleteBinary() {
-    await fetch(`${$settings.backendUrl}/delete_binary_from_project`, {
+    await fetch(`${$backendUrl}/delete_binary_from_project`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,7 +37,7 @@
       selectedBinaryName = undefined;
       forceRefreshProject = {};
       $selectedProject = await fetch(
-        `${$settings.backendUrl}/get_project_by_id?id=${$selectedProject.session_id}`
+        `${$backendUrl}/get_project_by_id?id=${$selectedProject.session_id}`
       ).then((r) => {
         if (!r.ok) {
           throw Error(r.statusText);
@@ -51,7 +51,7 @@
   let toolbarButtons = [
     {
       text: "Delete Binary",
-      iconUrl: "/icons/trash.svg",
+      iconUrl: "icons/trash.svg",
       shortcut: "D",
       onclick: () => {
         deleteBinary;

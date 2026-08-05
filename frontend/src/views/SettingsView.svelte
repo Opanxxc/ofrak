@@ -262,7 +262,7 @@
         }}"
       >
         {#if loadingDark}
-          <Icon url="/icons/loading.svg" />
+          <Icon url="icons/loading.svg" />
         {/if}
         Generate Dark Mode
       </Button>
@@ -272,7 +272,7 @@
         }}"
       >
         {#if loadingLight}
-          <Icon url="/icons/loading.svg" />
+          <Icon url="icons/loading.svg" />
         {/if}
         Generate Light Mode
       </Button>

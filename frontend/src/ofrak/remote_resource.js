@@ -1,5 +1,5 @@
 import { Resource } from "./resource";
-import { settings, script } from "../stores";
+import { backendUrl, script } from "../stores";
 
 import { get } from "svelte/store";
 
@@ -18,16 +18,13 @@ function createQueue(route, maxlen) {
         queue.requests = [];
       }
 
-      const result_models = await fetch(
-        `${get(settings).backendUrl}/batch/${route}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requests),
-        }
-      ).then(async (r) => {
+      const result_models = await fetch(`${get(backendUrl)}/batch/${route}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requests),
+      }).then(async (r) => {
         if (!r.ok) {
           throw Error(JSON.stringify(await r.json(), undefined, 2));
         }
@@ -88,7 +85,7 @@ export class RemoteResource extends Resource {
     super(resource_id, data_id, parent_id, tags, caption, attributes);
 
     this.resource_list = resource_list;
-    this.uri = `${get(settings).backendUrl}/${this.resource_id}`;
+    this.uri = `${get(backendUrl)}/${this.resource_id}`;
     this.cache = {
       get_children: undefined,
       get_data_range_within_parent: undefined,

@@ -67,7 +67,7 @@
       }
     }}"
   >
-    <Icon url="/icons/content_copy.svg" />
+    <Icon url="icons/content_copy.svg" />
   </Button>
   <Button
     --button-padding="0.5em 1em 0em 1em"
@@ -88,7 +88,7 @@
       URL.revokeObjectURL(blobUrl);
     }}"
   >
-    <Icon url="/icons/download.svg" />
+    <Icon url="icons/download.svg" />
   </Button>
   <Button
     --button-padding="0.5em 1em 0em 1em"
@@ -96,7 +96,7 @@
     --button-border="0"
     on:click="{() => (bottomLeftPane = undefined)}"
   >
-    <Icon url="/icons/error.svg" />
+    <Icon url="icons/error.svg" />
   </Button>
 </div>
 <Script script="{$script}" />

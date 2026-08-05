@@ -76,7 +76,7 @@
   import {
     selected,
     selectedResource,
-    settings,
+    backendUrl,
     resourceNodeDataMap,
   } from "../stores.js";
   import Button from "../utils/Button.svelte";
@@ -128,9 +128,7 @@
 
   onMount(async () => {
     try {
-      const r = await fetch(
-        `${$settings.backendUrl}/get_all_program_attributes`
-      );
+      const r = await fetch(`${$backendUrl}/get_all_program_attributes`);
       if (!r.ok) {
         throw Error(JSON.stringify(await r.json(), undefined, 2));
       }
