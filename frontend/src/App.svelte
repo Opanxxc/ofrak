@@ -42,10 +42,26 @@
     selectedResource,
     settings,
     dataLength,
+    resourceNodeDataMap,
   } from "./stores.js";
   import { keyEventToString, shortcuts } from "./keyboard.js";
+  import { currentPosition } from "./hex/stores.js";
+  import { installEmbed } from "./embed.js";
 
   printConsoleArt();
+
+  // Expose a small control surface for a same-origin host page that embeds this
+  // GUI in an iframe; the host calls it via iframe.contentWindow.ofrakEmbed.*.
+  // Inert with no caller (standalone OFRAK just never touches it). `resources`
+  // is this component's id->RemoteResource map; pass a getter so the surface
+  // always reads the current binding. App is the root component (never
+  // unmounts), so no teardown is needed.
+  window.ofrakEmbed = installEmbed({
+    resourceFor: (id) => resources[id],
+    selected,
+    resourceNodeDataMap,
+    currentPosition,
+  });
 
   let showRootResource = false,
     showProjectManager = false,
