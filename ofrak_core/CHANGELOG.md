@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - Remove test dependencies that are already in the global `requirements-dev.txt` ([#695](https://github.com/redballoonsecurity/ofrak/pull/695))
 
 ### Fixed
+- Remove libmagic 5.46 pin as the pinned manifest is not compatible with latest brew and libmagic 5.48 fixes the original regression ([#755](https://github.com/redballoonsecurity/ofrak/pull/755))
 - Fix thread-unsafe `os.chdir` in `ZipPacker` by passing `cwd` to subprocess ([#721](https://github.com/redballoonsecurity/ofrak/pull/721))
 - Pin libmagic to 5.46 on macOS CI builds to work around a regression in 5.47 that breaks ELF identification; update documentation to reflect the libmagic 5.46 requirement ([#723](https://github.com/redballoonsecurity/ofrak/pull/723))
 - Bump `aiohttp` to >=3.13.3 to address CVE-2025-69223 ([#693](https://github.com/redballoonsecurity/ofrak/pull/693))
@@ -38,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - Fix bug in Segment Injector: favor regions with data when injecting data ([#682](https://github.com/redballoonsecurity/ofrak/pull/682))
 - Pass `usedforsecurity=False` to non-cryptographic `hashlib` calls to prevent failures when Python links against FIPS OpenSSL ([#744](https://github.com/redballoonsecurity/ofrak/pull/744))
 - Fix `chdir` in UEFI components causing failing tests. ([#747](https://github.com/redballoonsecurity/ofrak/pull/747))
+- Fix bug in `ISO9660Unpacker` for files in root directory. ([#750](https://github.com/redballoonsecurity/ofrak/pull/750))
+- Fix binwalk and entropy file descriptor leak. ([#749](https://github.com/redballoonsecurity/ofrak/pull/749))
 
 ## [3.3.0](https://github.com/redballoonsecurity/ofrak/compare/ofrak-v3.2.0...ofrak-v3.3.0) - 2025-10-03
 
