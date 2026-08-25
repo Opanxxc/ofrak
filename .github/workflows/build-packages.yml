@@ -250,7 +250,6 @@ jobs:
           chmod +x /tmp/appimagetool.AppImage
           cd /tmp
           /tmp/appimagetool.AppImage --appimage-extract-and-run \
-            --comp gzip \
             "$APPDIR" "OFRAK-${{ steps.ver.outputs.raw }}-x86_64.AppImage"
           ls -la OFRAK-*.AppImage
           cp OFRAK-*.AppImage /tmp/artifacts/
