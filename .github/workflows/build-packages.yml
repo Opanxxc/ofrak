@@ -131,10 +131,10 @@ jobs:
           Name=OFRAK
           GenericName=Binary Analysis & Modification Platform
           Comment=Unpack, analyze, modify and repack binaries
-          Exec=bash -c 'ofrak gui'
+          Exec=ofrak gui
           Icon=ofrak
           Terminal=true
-          Categories=Development;Security;Utility;
+          Categories=Development;Security;Utility;System;
           Keywords=reversing;firmware;binary;elf;analysis;
           EOF
           sed -i 's/^          //' "$STAGE/usr/share/applications/ofrak.desktop"
