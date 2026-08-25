@@ -62,6 +62,20 @@ chmod +x OFRAK-*-x86_64.AppImage
 
 Both packages bundle a standalone Python 3.13 interpreter and the pre-built GUI frontend — no system Python or Node.js required.
 
+**Install on Android via Termux:**
+
+```bash
+curl -sL https://raw.githubusercontent.com/Opanxxc/ofrak/master/scripts/termux-install.sh -o termux-install.sh
+bash termux-install.sh
+```
+
+The script installs all build dependencies (Python, clang, rust, OpenSSL), then installs OFRAK via pip. First build takes 20-40 minutes on-device (compiling native deps). After that:
+
+```bash
+ofrak license --community --i-agree
+ofrak gui        # open http://127.0.0.1:8888 in your browser
+```
+
 See ([Install](docs/install/index.md)) for detailed installation instructions.
 
 Note that OFRAK uses Git LFS -- see [Installing from Source](docs/install/source.md) for more details.
