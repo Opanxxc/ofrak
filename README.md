@@ -35,13 +35,32 @@ The web-based GUI view provides a navigable resource tree. For the selected reso
 
 ### Installation Methods
 
-OFRAK can be installed in three ways:
+OFRAK can be installed in four ways:
 
 | Method | Best For | Installation Command |
 |--------|----------|---------------------|
+| **.deb / .AppImage** (this fork) | Ready-to-use desktop install with bundled Python 3.13 + GUI | Download from [Releases](https://github.com/Opanxxc/ofrak/releases) |
 | **PyPI** | Quick testing, users who prefer managing their own environment | `pip install ofrak` |
 | **Docker** | Comprehensive environment with all dependencies, consistent setup | `python3 build_image.py --config ofrak-ghidra.yml --base --finish` |
 | **Source** | Contributors, developers, modifying OFRAK code | Clone repo + `make develop` |
+
+**Install via .deb (Debian/Ubuntu):**
+
+```bash
+sudo apt install ./ofrak_*_amd64.deb
+ofrak license --community --i-agree   # first run only
+ofrak gui                             # opens web GUI at http://localhost:8888
+```
+
+**Run via .AppImage (any distro):**
+
+```bash
+chmod +x OFRAK-*-x86_64.AppImage
+./OFRAK-*-x86_64.AppImage license --community --i-agree
+./OFRAK-*-x86_64.AppImage gui
+```
+
+Both packages bundle a standalone Python 3.13 interpreter and the pre-built GUI frontend — no system Python or Node.js required.
 
 See ([Install](docs/install/index.md)) for detailed installation instructions.
 
