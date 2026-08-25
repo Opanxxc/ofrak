@@ -296,6 +296,76 @@ jobs:
         run: |
           gh release view continuous --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
             gh release create continuous --title "OFRAK Continuous Build" \
-              --notes "Latest master build. .deb + .AppImage included." \
+              --notes "Latest master build. .deb + .AppImage + Termux .deb included." \
               --repo "$GITHUB_REPOSITORY" || true
           gh release upload continuous /tmp/artifacts/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  build-termux-deb:
+    name: Build Termux .deb (aarch64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build GUI frontend
+        run: |
+          cd frontend
+          npm ci --no-audit --no-fund
+          npm run build
+          cd ..
+          mkdir -p ofrak_core/src/ofrak/gui/public
+          cp -r frontend/dist/* ofrak_core/src/ofrak/gui/public/
+
+      - name: Get version
+        id: ver
+        run: |
+          RAW=$(python3 -c "exec(open('ofrak_core/version.py').read()); print(VERSION)")
+          DEB_VER=$(echo "$RAW" | sed 's/rc/~rc/')
+          echo "deb=$DEB_VER" >> "$GITHUB_OUTPUT"
+
+      - name: Build inside Termux container (native aarch64)
+        run: |
+          chmod +x scripts/build-termux-deb-inside.sh
+          docker pull --platform linux/arm64 termux/termux-docker:aarch64
+          docker run --rm --platform linux/arm64 \
+            -e OFRAK_DEB_VERSION="${{ steps.ver.outputs.deb }}" \
+            -v "$GITHUB_WORKSPACE":/work \
+            termux/termux-docker:aarch64 \
+            /bin/bash /work/scripts/build-termux-deb-inside.sh
+          ls -la ofrak_*_aarch64.deb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ofrak-termux-deb
+          path: ofrak_*_aarch64.deb
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release upload "$TAG" ofrak_*_aarch64.deb --clobber --repo "$GITHUB_REPOSITORY" 2>/dev/null || \
+            gh release create "$TAG" ofrak_*_aarch64.deb --title "OFRAK $TAG" --notes "Termux .deb included." --repo "$GITHUB_REPOSITORY"
+
+      - name: Update continuous release
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view continuous --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create continuous --title "OFRAK Continuous Build" \
+              --notes "Latest master build." --repo "$GITHUB_REPOSITORY" || true
+          gh release upload continuous ofrak_*_aarch64.deb --clobber --repo "$GITHUB_REPOSITORY"

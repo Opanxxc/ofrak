@@ -69,7 +69,7 @@ curl -sL https://raw.githubusercontent.com/Opanxxc/ofrak/master/scripts/termux-i
 bash termux-install.sh
 ```
 
-The script installs all build dependencies (Python, clang, rust, OpenSSL), then installs OFRAK via pip. First build takes 20-40 minutes on-device (compiling native deps). After that:
+By default the installer downloads a **prebuilt Termux .deb (aarch64)** — installs in ~1 minute, no compilation. If no prebuilt package is available it automatically falls back to on-device compilation (20-40 min). Use `bash termux-install.sh --build` to force compiling from PyPI, or `--source <dir>` to build from a local checkout.
 
 ```bash
 ofrak license --community --i-agree
