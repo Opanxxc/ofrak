@@ -115,6 +115,10 @@ jobs:
 
           # Relative symlink so it works identically in .deb and AppDir
           ln -sf ../../opt/ofrak/run-ofrak.sh "$STAGE/usr/bin/ofrak"
+          # Terminal UI menu - no browser needed
+          cp scripts/ofrak-menu.sh "$STAGE/opt/ofrak/ofrak-menu"
+          chmod +x "$STAGE/opt/ofrak/ofrak-menu"
+          ln -sf ../../opt/ofrak/ofrak-menu "$STAGE/usr/bin/ofrak-menu"
 
           # AppRun entrypoint for the AppImage
           cat > /tmp/AppRun << 'EOF'
@@ -340,7 +344,7 @@ jobs:
             -e OFRAK_DEB_VERSION="${{ steps.ver.outputs.deb }}" \
             -v "$GITHUB_WORKSPACE":/work \
             termux/termux-docker:aarch64 \
-            /bin/bash /work/scripts/build-termux-deb-inside.sh
+            bash /work/scripts/build-termux-deb-inside.sh
           ls -la ofrak_*_aarch64.deb
 
       - name: Upload artifact

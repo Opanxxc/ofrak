@@ -27,6 +27,9 @@ pkg install -y \
 export CFLAGS="-Wno-deprecated-declarations"
 export CPPFLAGS="-I$PREFIX/include"
 export LDFLAGS="-L$PREFIX/lib -Wl,-rpath=$PREFIX/lib"
+# New setuptools removed pkg_resources which some sdists import at build time
+printf 'setuptools<81\n' > /tmp/pip-constraints.txt
+export PIP_CONSTRAINT=/tmp/pip-constraints.txt
 
 echo "[*] Upgrading pip/setuptools/wheel..."
 python3 -m pip install --upgrade pip setuptools wheel
@@ -50,8 +53,10 @@ mkdir -p "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER" \
 
 echo "[*] Staging site-packages..."
 cp -r "$SP" "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
-# Ship the CLI wrapper too
+# Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
+cp /work/scripts/ofrak-menu.sh "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
+chmod +x "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
 
 cat > "$STAGE/DEBIAN/control" << EOF
 Package: ofrak

@@ -48,12 +48,22 @@ install_source_build() {
   export CFLAGS="-Wno-deprecated-declarations"
   export CPPFLAGS="-I$PREFIX/include"
   export LDFLAGS="-L$PREFIX/lib"
-  pip install --upgrade pip setuptools wheel
+  # New setuptools (>=81) removed pkg_resources which old sdists import at build time.
+  # Pin it via PIP_CONSTRAINT so pip build isolation respects it too.
+  printf 'setuptools<81\n' > "$HOME/.ofrak-pip-constraints.txt"
+  export PIP_CONSTRAINT="$HOME/.ofrak-pip-constraints.txt"
+  pip install --upgrade "pip" "setuptools<81" wheel
   if [[ -n "$SRC_MODE" ]]; then
     pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
     pip install "$SRC_MODE/ofrak_core"
   else
-    pip install ofrak
+    # Install ofrak CORE from this fork (modern dependency pins, PyPI only has
+    # ancient 3.2.0 with aiohttp~=3.8.1 that fails to build on new Python).
+    # Helper packages come from PyPI wheels (pure python, safe).
+    info "Installing helper packages from PyPI..."
+    pip install ofrak-type ofrak-io ofrak-patch-maker
+    info "Installing ofrak core from GitHub fork (latest)..."
+    pip install --pre "ofrack @ git+https://github.com/$REPO.git#subdirectory=ofrak_core"
   fi
 }
 
@@ -88,6 +98,13 @@ else
   fi
 fi
 
+# --- Also grab the terminal menu if not already installed -----
+if ! command -v ofrak-menu >/dev/null 2>&1; then
+  curl -sfL "https://raw.githubusercontent.com/$REPO/master/scripts/ofrak-menu.sh" \
+    -o "$PREFIX/bin/ofrak-menu" && chmod +x "$PREFIX/bin/ofrak-menu" \
+    && info "Installed terminal menu: run 'ofrak-menu'"
+fi
+
 # --- License hint + verify ------------------------------------
 command -v ofrak >/dev/null 2>&1 || die "ofrak binary not found in PATH. Check output above."
 
@@ -98,9 +115,11 @@ cat <<EOF
 ==============================================================
  Usage:
    ofrak license --community --i-agree    # first run only
+   ofrak-menu                             # TUI - no browser needed!
    ofrak gui                              # web GUI on port 8888
    ofrak list                             # list all components
 
- GUI: open http://127.0.0.1:8888 in your phone browser
+ Terminal menu: 'ofrak-menu' -> unpack/identify langsung di Termux
+ Web GUI: open http://127.0.0.1:8888 in your phone browser
 ==============================================================
 EOF
