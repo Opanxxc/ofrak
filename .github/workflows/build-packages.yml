@@ -241,6 +241,8 @@ jobs:
           # .DirIcon must point to the icon
           rm -f "$APPDIR/.DirIcon"
           cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/ofrak.png" "$APPDIR/.DirIcon"
+          # appimagetool requires <name>.png at AppDir root
+          cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/ofrak.png" "$APPDIR/ofrak.png"
 
           # Download appimagetool (no FUSE build-time requirement)
           curl -sL -o /tmp/appimagetool.AppImage \
