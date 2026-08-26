@@ -27,6 +27,9 @@ pkg install -y \
 export CFLAGS="-Wno-deprecated-declarations"
 export CPPFLAGS="-I$PREFIX/include"
 export LDFLAGS="-L$PREFIX/lib -Wl,-rpath=$PREFIX/lib"
+# maturin (cryptography rust builds) needs the Android API level on Termux
+export ANDROID_API_LEVEL=24
+export CARGO_BUILD_TARGET="aarch64-linux-android"
 # New setuptools removed pkg_resources which some sdists import at build time
 # NOTE: Termux has no writable /tmp - use $HOME instead
 printf 'setuptools<81\n' > "$HOME/.pip-constraints.txt"

@@ -48,6 +48,8 @@ install_source_build() {
   export CFLAGS="-Wno-deprecated-declarations"
   export CPPFLAGS="-I$PREFIX/include"
   export LDFLAGS="-L$PREFIX/lib"
+  # maturin (cryptography rust builds) needs Android API level on Termux
+  export ANDROID_API_LEVEL=24
   # New setuptools (>=81) removed pkg_resources which old sdists import at build time.
   # Pin it via PIP_CONSTRAINT so pip build isolation respects it too.
   printf 'setuptools<81\n' > "$HOME/.ofrak-pip-constraints.txt"
