@@ -61,7 +61,7 @@ check "ofrak binary in PATH"          "command -v ofrak"
 check "ofrak-menu (TUI) in PATH"      "command -v ofrak-menu"
 check "python can import ofrak"       "python3 -c 'import ofrak'"
 check "ofrak --help runs"             "ofrak --help"
-check "license accept works"          "yes | ofrak license --community --i-agree"
+check "license accept works"          "ofrak license --community --i-agree"
 check "ofrak list lists components"   "ofrak list"
 check "TUI starts and quits (piped)"  "echo 0 | ofrak-menu"
 
