@@ -15,8 +15,12 @@ export DEBIAN_FRONTEND=noninteractive
 : "${OFRAK_DEB_VERSION:=3.4.0}"
 
 echo "[*] Updating Termux packages..."
-pkg update -y
-pkg upgrade -y
+# Force official repo to avoid out-of-sync mirrors
+cat > "$PREFIX/etc/apt/sources.list" << 'REPO'
+deb https://packages.termux.org/apt/termux-main stable main
+REPO
+pkg update -y || { echo "[!] Retrying pkg update..."; pkg update -y; }
+pkg upgrade -y || true
 
 echo "[*] Installing build dependencies..."
 pkg install -y \
