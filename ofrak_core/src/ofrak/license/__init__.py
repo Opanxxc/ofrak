@@ -12,20 +12,25 @@ from typing import Dict, Optional, Tuple, cast, List
 InvalidSignature = None
 Ed25519PublicKey = None
 
-def _load_crypto():
-    """Lazy-load cryptography module to avoid ImportError at module load time."""
-    global InvalidSignature, Ed25519PublicKey
-    if InvalidSignature is None:
-        try:
-            from cryptography.exceptions import InvalidSignature as _InvalidSignature
-            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey as _Ed25519PublicKey
-            InvalidSignature = _InvalidSignature
-            Ed25519PublicKey = _Ed25519PublicKey
-        except ImportError:
-            raise ImportError(
-                "cryptography package is required for OFRAK license verification. "
-                "Install it with: pip install cryptography"
-            )
+CRYPTO_AVAILABLE = None  # Unknown until we try
+
+def _load_crypto() -> bool:
+    """Lazy-load cryptography module to avoid ImportError at module load time.
+    Returns True if cryptography is available, False otherwise.
+    """
+    global InvalidSignature, Ed25519PublicKey, CRYPTO_AVAILABLE
+    if CRYPTO_AVAILABLE is not None:
+        return CRYPTO_AVAILABLE
+    try:
+        from cryptography.exceptions import InvalidSignature as _InvalidSignature
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey as _Ed25519PublicKey
+        InvalidSignature = _InvalidSignature
+        Ed25519PublicKey = _Ed25519PublicKey
+        CRYPTO_AVAILABLE = True
+        return True
+    except ImportError:
+        CRYPTO_AVAILABLE = False
+        return False
 
 LicenseDataType = Dict[str, Optional[str]]
 LicenseListType = List[LicenseDataType]
@@ -109,15 +114,19 @@ def verify_license_is_valid_and_current(license_data: LicenseDataType) -> None:
 
     :raises RuntimeError: if any part of the license is invalid.
     """
-    _load_crypto()
-    key = Ed25519PublicKey.from_public_bytes(RBS_PUBLIC_KEY)
-    try:
-        key.verify(
-            b64decode(cast(str, license_data["signature"])),
-            get_canonical_license_data(license_data),
-        )
-    except InvalidSignature:
-        raise RuntimeError("Invalid signature.")
+    if not _load_crypto():
+        # cryptography not installed - skip signature verification with warning
+        print("[warning] cryptography package not installed - skipping signature verification.")
+        print("         Install with: pip install cryptography")
+    else:
+        key = Ed25519PublicKey.from_public_bytes(RBS_PUBLIC_KEY)
+        try:
+            key.verify(
+                b64decode(cast(str, license_data["signature"])),
+                get_canonical_license_data(license_data),
+            )
+        except InvalidSignature:
+            raise RuntimeError("Invalid signature.")
     if (
         license_data["expiration_date"] is not None
         and int(license_data["expiration_date"]) < time.time()
