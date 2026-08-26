@@ -56,7 +56,7 @@ echo "[*] Staging site-packages..."
 cp -r "$SP" "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
-cp /work/scripts/ofrak-menu.sh "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
+cp "$HOME/scripts/ofrak-menu.sh" "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
 chmod +x "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
 
 cat > "$STAGE/DEBIAN/control" << EOF
