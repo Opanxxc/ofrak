@@ -55,8 +55,12 @@ curl -sSL "$LIEF_URL" -o "$HOME/lief.tar.gz" 2>/dev/null \
   || python3 -c "import urllib.request as u; u.urlretrieve('$LIEF_URL','$HOME/lief.tar.gz')"
 rm -rf "$HOME/lief-src" && mkdir -p "$HOME/lief-src"
 tar -xzf "$HOME/lief.tar.gz" -C "$HOME/lief-src" --strip-components=1
-ls "$HOME/lief-src/api/python/setup.py" >/dev/null || { echo "[-] LIEF python bindings not found"; exit 1; }
-python3 -m pip install "$HOME/lief-src/api/python"
+if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/python/pyproject.toml" ]; then
+  echo "[-] LIEF python bindings not found"; ls "$HOME/lief-src/api/" || true; exit 1
+fi
+python3 -m pip install "$HOME/lief-src/api/python" \
+  || { python3 -m pip install scikit-build-core ninja;
+       python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"; }
 python3 -m pip install \
   "$BUILDDIR/ofrak_type" \
   "$BUILDDIR/ofrak_io" \

@@ -63,7 +63,11 @@ install_source_build() {
     || curl -sSL "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz" -o "$HOME/lief.tar.gz"
   rm -rf "$HOME/lief-src" && mkdir -p "$HOME/lief-src"
   tar -xzf "$HOME/lief.tar.gz" -C "$HOME/lief-src" --strip-components=1
-  pip install "$HOME/lief-src/api/python"
+  if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/python/pyproject.toml" ]; then
+    die "LIEF python bindings not found in extracted source"
+  fi
+  pip install "$HOME/lief-src/api/python" \
+    || { pip install scikit-build-core ninja; pip install --no-build-isolation "$HOME/lief-src/api/python"; }
   if [[ -n "$SRC_MODE" ]]; then
     pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
     pip install "$SRC_MODE/ofrak_core"
