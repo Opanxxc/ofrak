@@ -340,12 +340,16 @@ jobs:
         run: |
           chmod +x scripts/build-termux-deb-inside.sh
           docker pull --platform linux/arm64 termux/termux-docker:aarch64
-          docker run --rm --platform linux/arm64 --user root \
+          CONTAINER_ID=$(docker create --platform linux/arm64 --user root \
             -e OFRAK_DEB_VERSION="${{ steps.ver.outputs.deb }}" \
             -v "$GITHUB_WORKSPACE":/work \
             termux/termux-docker:aarch64 \
-            bash /work/scripts/build-termux-deb-inside.sh
+            bash /work/scripts/build-termux-deb-inside.sh)
+          docker start -a "$CONTAINER_ID" || EXIT_CODE=$?
+          docker cp "$CONTAINER_ID":/root/ofrak_*.deb ./ || true
+          docker rm -f "$CONTAINER_ID" >/dev/null 2>&1 || true
           ls -la ofrak_*_aarch64.deb
+          if [ -n "${EXIT_CODE:-}" ] && [ "$EXIT_CODE" -ne 0 ]; then exit "$EXIT_CODE"; fi
 
       - name: Auto-test Termux .deb (fresh container)
         run: |

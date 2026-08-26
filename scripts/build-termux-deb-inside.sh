@@ -128,8 +128,8 @@ Homepage: https://github.com/Opanxxc/ofrak
 EOF
 
 echo "[*] Building .deb..."
-# Build deb in /work (the mounted host workspace) so cp isn't needed.
-DEB_OUT="/work/ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"
+# Build in HOME (guaranteed writable), workflow will docker-cp it out.
+DEB_OUT="$HOME/ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"
 if dpkg-deb --root-owner-group --build "$STAGE" "$DEB_OUT" 2>/dev/null; then :;
 else dpkg-deb --build "$STAGE" "$DEB_OUT"; fi
 ls -la "$DEB_OUT"
