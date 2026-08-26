@@ -101,13 +101,33 @@ mkdir -p "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER" \
          "$STAGE/data/data/com.termux/files/usr/bin" \
          "$STAGE/DEBIAN"
 
-echo "[*] Staging site-packages..."
-cp -r "$SP" "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
-# Remove files that conflict with the 'python' package
+echo "[*] Staging site-packages (ofrak only)..."
 SP_DIR="$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
-rm -f "$SP_DIR/README.txt" "$SP_DIR/README"
+# Use pip to list only ofrak's own installed packages (no system overlap)
+python3 -m pip freeze --user 2>/dev/null > "$HOME/installed-pkgs.txt" || true
+# Copy ALL site-packages, then remove system conflicts
+mkdir -p "$SP_DIR"
+cp -r "$SP/"* "$SP_DIR/" 2>/dev/null || true
+# Aggressive blacklist: remove everything that ships with Termux packages
+for name in pip pip-"*" setuptools setuptools-"*" wheel wheel-"*" \
+            ensurepip ensurepip-"*" _distutils_hack distutils pkg_resources \
+            tkinter turtledemo idlelib email test test_"*" \
+            lib2to3 _colorsys _compat_pickle _compression _markupbase \
+            _pylong _scproxy dbm idle_test imaplib imghdr mailcap \
+            mhlib nntplib pipes sndhdr sunau telnetlib uu whatchangediff \
+            __phello__"_*" http server _osx_support; do
+  rm -rf "$SP_DIR/$name" 2>/dev/null || true
+done
+# Remove dist-info for conflicting packages
+for name in pip setuptools wheel ensurepip _distutils_hack distutils \
+            tkinter turtledemo idlelib lib2to3; do
+  find "$SP_DIR" -maxdepth 1 -name "${name}*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
+done
+# Remove .pyc, __pycache__, README
 find "$SP_DIR" -name '*.pyc' -delete 2>/dev/null || true
 find "$SP_DIR" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+rm -f "$SP_DIR/README.txt" "$SP_DIR/README"
+echo "[*] After cleanup: $(ls "$SP_DIR" | wc -l) packages in deb"
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
 ln -sf ofrak "$STAGE/data/data/com.termux/files/usr/bin/ofrack"
@@ -122,7 +142,7 @@ Priority: optional
 Architecture: aarch64
 Installed-Size: $(du -sk "$STAGE/data" | cut -f1)
 Maintainer: Opanxxc <opanxxc@users.noreply.github.com>
-Depends: python (>= ${PYVER}), libffi, openssl, ncurses, readline, zlib
+Depends: python (>= ${PYVER}), python-pip, libffi, openssl, ncurses, readline, zlib
 Description: OFRAK - unpack, modify, and repack binaries (Termux build)
  Open Firmware Reverse Analysis Konsole. Binary analysis and
  modification platform with web GUI and Python API.

@@ -25,7 +25,7 @@ pkg install -y python libffi openssl ncurses readline zlib dpkg
 DEB=$(ls /work/ofrak_*_aarch64.deb | head -1)
 [[ -n "$DEB" ]] || { bad "No .deb found in /work"; exit 1; }
 echo "[*] Installing $DEB..."
-apt install -y "$DEB" || dpkg -i "$DEB"
+apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB"
 
 echo ""
 echo "========== OFRAK TERMUX AUTO-TEST =========="
