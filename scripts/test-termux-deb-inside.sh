@@ -26,8 +26,8 @@ deb https://packages.termux.org/apt/termux-main stable main
 REPO
 
 pkg update -y 2>/dev/null || true
-pkg install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils 2>/dev/null || \
-  apt-get install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils 2>/dev/null || true
+pkg install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils git 2>/dev/null || \
+  apt-get install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils git 2>/dev/null || true
 
 # Upgrade pip/setuptools before installing deb
 export PIP_CONSTRAINT="$HOME/.pip-constraints.txt"
