@@ -172,18 +172,19 @@ Description: OFRAK - unpack, modify, and repack binaries (Termux build)
 Homepage: https://github.com/Opanxxc/ofrak
 EOF
 
-# Create postinst to pip-install cryptography (abi3 incompatible with py3.14 on Termux)
+# Create postinst - try to install cryptography for full license verification.
+# ofrak works without it (lazy import), but license verification needs it.
 mkdir -p "$STAGE/DEBIAN"
 cat > "$STAGE/DEBIAN/postinst" << 'POSTINST'
 #!/data/data/com.termux/files/usr/bin/env bash
-set -e
+# Non-fatal: ofrak works without cryptography (lazy import)
 PREFIX=/data/data/com.termux/files/usr
 export PATH="$PREFIX/bin:$PATH"
-echo "[*] Installing maturin (Rust build backend for cryptography)..."
+echo "[*] Installing maturin (Rust build backend)..."
 "$PREFIX/bin/python3" -m pip install --no-cache-dir maturin 2>/dev/null || true
-echo "[*] Installing cryptography + cffi (pip, abi3 incompatible with py3.14)..."
-"$PREFIX/bin/python3" -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -5 || \
-  echo "[!] cryptography install failed - run manually: pip install maturin cffi cryptography"
+echo "[*] Installing cryptography (optional, for license verification)..."
+"$PREFIX/bin/python3" -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -3 || \
+  echo "[i] cryptography skipped - ofrak works without it"
 echo "[+] postinst done"
 POSTINST
 chmod 755 "$STAGE/DEBIAN/postinst"

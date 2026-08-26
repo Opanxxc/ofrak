@@ -7,8 +7,25 @@ from base64 import b64decode
 from textwrap import wrap
 from typing import Dict, Optional, Tuple, cast, List
 
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+# Lazy import cryptography - only needed for license verification
+# This allows `import ofrak` to work even without cryptography installed
+InvalidSignature = None
+Ed25519PublicKey = None
+
+def _load_crypto():
+    """Lazy-load cryptography module to avoid ImportError at module load time."""
+    global InvalidSignature, Ed25519PublicKey
+    if InvalidSignature is None:
+        try:
+            from cryptography.exceptions import InvalidSignature as _InvalidSignature
+            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey as _Ed25519PublicKey
+            InvalidSignature = _InvalidSignature
+            Ed25519PublicKey = _Ed25519PublicKey
+        except ImportError:
+            raise ImportError(
+                "cryptography package is required for OFRAK license verification. "
+                "Install it with: pip install cryptography"
+            )
 
 LicenseDataType = Dict[str, Optional[str]]
 LicenseListType = List[LicenseDataType]
@@ -92,6 +109,7 @@ def verify_license_is_valid_and_current(license_data: LicenseDataType) -> None:
 
     :raises RuntimeError: if any part of the license is invalid.
     """
+    _load_crypto()
     key = Ed25519PublicKey.from_public_bytes(RBS_PUBLIC_KEY)
     try:
         key.verify(
@@ -223,10 +241,10 @@ def read_license_file(license_path: str) -> Tuple[LicenseDataType, str]:
             license_list = json.load(f)
         license_data = license_list[0]
     except FileNotFoundError:
-        sys.exit(RuntimeError(f"License file '{abs_license_path}' does not exist."))
+        sys.exit(RuntimeError(f"License file '{license_path}' does not exist."))
     except KeyError:
         # This happens when the LicenseListType is not properly formatted
-        sys.exit(RuntimeError(f"License file '{abs_license_path}' is incorrectly formatted"))
+        sys.exit(RuntimeError(f"License file '{license_path}' is incorrectly formatted"))
     return license_data, abs_license_path
 
 

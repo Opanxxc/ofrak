@@ -40,12 +40,10 @@ echo "[*] Installing $DEB..."
 apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB" 2>/dev/null || \
   dpkg --force-all -i "$DEB" 2>/dev/null || { bad "dpkg install failed"; exit 1; }
 
-echo "[*] Installing maturin (needed by cryptography build on Termux)..."
+echo "[*] Installing maturin + cryptography (optional, for license verification)..."
 python3 -m pip install --no-cache-dir maturin 2>&1 | tail -3 || true
-
-echo "[*] Installing cryptography (not bundled - abi3 incompatible with py3.14)..."
 python3 -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -5 || \
-  echo "[!] cryptography pip install failed (may need manual install)"
+  echo "[i] cryptography skipped - ofrak works without it (lazy import)"
 
 echo ""
 echo "========== OFRAK TERMUX AUTO-TEST =========="
