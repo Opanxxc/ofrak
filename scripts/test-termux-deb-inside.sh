@@ -37,9 +37,12 @@ apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB"
 echo ""
 echo "========== OFRAK TERMUX AUTO-TEST =========="
 
-# Debug: show what's in the deb
+# Show full import traceback for debugging
 PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo '3.14')
 SP_DIR="$PREFIX/lib/python$PYVER/site-packages"
+echo "[*] site-packages: $(ls "$SP_DIR" 2>/dev/null | wc -l) entries"
+echo "[*] Full import traceback:"
+python3 -c 'import ofrak' 2>&1 | head -15 || true
 echo "[*] site-packages contents: $(ls "$SP_DIR" 2>/dev/null | wc -l) dirs"
 ls "$SP_DIR" 2>/dev/null | head -20
 echo "[*] ofrak binary: $(readlink -f $(which ofrak) 2>/dev/null || echo 'N/A')"
