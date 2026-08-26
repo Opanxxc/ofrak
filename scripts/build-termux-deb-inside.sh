@@ -47,10 +47,16 @@ cp /work/scripts/ofrak-menu.sh "$HOME/scripts/" 2>/dev/null || true
 
 echo "[*] Compiling & installing OFRAK packages (this takes a while)..."
 # LIEF: PyPI sdist is a wheel-only stub that refuses 'android - aarch64'.
-# Install the REAL source from GitHub so it compiles locally with cmake.
+# Install the REAL source from GitHub (Python bindings live in api/python/).
 echo "[*] Pre-building LIEF from real source (bypasses PyPI stub)..."
-python3 -m pip install "https://github.com/lief-project/LIEF/archive/refs/tags/1.0.0.tar.gz" \
-  || python3 -m pip install "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz"
+LIEF_URL="https://github.com/lief-project/LIEF/archive/refs/tags/1.0.0.tar.gz"
+curl -sSL "$LIEF_URL" -o "$HOME/lief.tar.gz" 2>/dev/null \
+  || curl -sSL "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz" -o "$HOME/lief.tar.gz" \
+  || python3 -c "import urllib.request as u; u.urlretrieve('$LIEF_URL','$HOME/lief.tar.gz')"
+rm -rf "$HOME/lief-src" && mkdir -p "$HOME/lief-src"
+tar -xzf "$HOME/lief.tar.gz" -C "$HOME/lief-src" --strip-components=1
+ls "$HOME/lief-src/api/python/setup.py" >/dev/null || { echo "[-] LIEF python bindings not found"; exit 1; }
+python3 -m pip install "$HOME/lief-src/api/python"
 python3 -m pip install \
   "$BUILDDIR/ofrak_type" \
   "$BUILDDIR/ofrak_io" \
