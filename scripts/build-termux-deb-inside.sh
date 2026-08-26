@@ -35,9 +35,19 @@ export PIP_CONSTRAINT="$HOME/.pip-constraints.txt"
 echo "[*] Upgrading pip/setuptools/wheel..."
 python3 -m pip install --upgrade pip setuptools wheel
 
+echo "[*] Copying sources to writable dir (/work may be read-only)..."
+BUILDDIR="$HOME/build"
+rm -rf "$BUILDDIR" && mkdir -p "$BUILDDIR"
+cp -r /work/ofrak_type /work/ofrak_io /work/ofrak_patch_maker /work/ofrak_core "$BUILDDIR/"
+mkdir -p "$HOME/scripts"
+cp /work/scripts/ofrak-menu.sh "$HOME/scripts/" 2>/dev/null || true
+
 echo "[*] Compiling & installing OFRAK packages (this takes a while)..."
-python3 -m pip install /work/ofrak_type /work/ofrak_io /work/ofrak_patch_maker
-python3 -m pip install /work/ofrak_core
+python3 -m pip install \
+  "$BUILDDIR/ofrak_type" \
+  "$BUILDDIR/ofrak_io" \
+  "$BUILDDIR/ofrak_patch_maker"
+python3 -m pip install "$BUILDDIR/ofrak_core"
 
 echo "[*] Verifying install..."
 command -v ofrack >/dev/null || { echo "[-] ofrack binary missing"; exit 1; }
