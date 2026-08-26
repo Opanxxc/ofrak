@@ -28,8 +28,9 @@ export CFLAGS="-Wno-deprecated-declarations"
 export CPPFLAGS="-I$PREFIX/include"
 export LDFLAGS="-L$PREFIX/lib -Wl,-rpath=$PREFIX/lib"
 # New setuptools removed pkg_resources which some sdists import at build time
-printf 'setuptools<81\n' > /tmp/pip-constraints.txt
-export PIP_CONSTRAINT=/tmp/pip-constraints.txt
+# NOTE: Termux has no writable /tmp - use $HOME instead
+printf 'setuptools<81\n' > "$HOME/.pip-constraints.txt"
+export PIP_CONSTRAINT="$HOME/.pip-constraints.txt"
 
 echo "[*] Upgrading pip/setuptools/wheel..."
 python3 -m pip install --upgrade pip setuptools wheel
@@ -45,7 +46,7 @@ ofrak list | head -5 || true
 # --- Stage into Termux filesystem layout ----------------------
 PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 SP="$PREFIX/lib/python$PYVER/site-packages"
-STAGE=/tmp/debstage
+STAGE="$HOME/debstage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER" \
          "$STAGE/data/data/com.termux/files/usr/bin" \
@@ -77,9 +78,9 @@ Homepage: https://github.com/Opanxxc/ofrak
 EOF
 
 echo "[*] Building .deb..."
-cd /tmp
-if dpkg-deb --root-owner-group --build debstage "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb" 2>/dev/null; then :;
-else dpkg-deb --build debstage "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"; fi
+cd "$HOME"
+if dpkg-deb --root-owner-group --build "$STAGE" "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb" 2>/dev/null; then :;
+else dpkg-deb --build "$STAGE" "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"; fi
 ls -la "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"
 cp "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb" /work/
 echo "[+] DONE: $(ls /work/ofrak_*_aarch64.deb)"

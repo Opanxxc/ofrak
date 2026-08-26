@@ -347,6 +347,14 @@ jobs:
             bash /work/scripts/build-termux-deb-inside.sh
           ls -la ofrak_*_aarch64.deb
 
+      - name: Auto-test Termux .deb (fresh container)
+        run: |
+          chmod +x scripts/test-termux-deb-inside.sh
+          docker run --rm --platform linux/arm64 \
+            -v "$GITHUB_WORKSPACE":/work \
+            termux/termux-docker:aarch64 \
+            bash /work/scripts/test-termux-deb-inside.sh
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
