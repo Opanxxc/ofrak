@@ -103,6 +103,11 @@ mkdir -p "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER" \
 
 echo "[*] Staging site-packages..."
 cp -r "$SP" "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
+# Remove files that conflict with the 'python' package
+SP_DIR="$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
+rm -f "$SP_DIR/README.txt" "$SP_DIR/README"
+find "$SP_DIR" -name '*.pyc' -delete 2>/dev/null || true
+find "$SP_DIR" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
 ln -sf ofrak "$STAGE/data/data/com.termux/files/usr/bin/ofrack"
