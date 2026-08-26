@@ -346,9 +346,16 @@ jobs:
             termux/termux-docker:aarch64 \
             bash /work/scripts/build-termux-deb-inside.sh)
           docker start -a "$CONTAINER_ID" || EXIT_CODE=$?
-          docker cp "$CONTAINER_ID":/data/data/com.termux/files/home/ofrak_*.deb ./ || true
+          # docker cp doesn't support globs — copy the whole home dir then find locally
+          docker cp "$CONTAINER_ID":/data/data/com.termux/files/home/ ./termux-home/ || true
           docker rm -f "$CONTAINER_ID" >/dev/null 2>&1 || true
-          ls -la ofrak_*_aarch64.deb
+          # Move any .deb found to workspace root
+          DEB_FOUND=$(find ./termux-home -name '*.deb' -print -quit 2>/dev/null || true)
+          if [ -n "$DEB_FOUND" ]; then
+            mv "$DEB_FOUND" ./
+          fi
+          rm -rf ./termux-home
+          ls -la ofrak_*_aarch64.deb 2>/dev/null || echo '[!] No .deb found'
           if [ -n "${EXIT_CODE:-}" ] && [ "$EXIT_CODE" -ne 0 ]; then exit "$EXIT_CODE"; fi
 
       - name: Auto-test Termux .deb (fresh container)
