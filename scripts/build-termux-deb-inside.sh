@@ -22,7 +22,8 @@ pkg install -y \
   python python-pip \
   clang make cmake binutils pkg-config \
   libffi openssl rust git lld \
-  ncurses readline zlib dpkg
+  ncurses readline zlib dpkg \
+  ninja re2c
 
 export CFLAGS="-Wno-deprecated-declarations"
 export CPPFLAGS="-I$PREFIX/include"
@@ -58,10 +59,9 @@ tar -xzf "$HOME/lief.tar.gz" -C "$HOME/lief-src" --strip-components=1
 if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/python/pyproject.toml" ]; then
   echo "[-] LIEF python bindings not found"; ls "$HOME/lief-src/api/" || true; exit 1
 fi
-python3 -m pip install "$HOME/lief-src/api/python" \
-  || { python3 -m pip install scikit-build-core ninja;
-       python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"; }
-python3 -m pip install \
+# Use Termux's own ninja/cmake (pip ninja wheel doesn't exist for android)
+python3 -m pip install scikit-build-core
+python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"python3 -m pip install \
   "$BUILDDIR/ofrak_type" \
   "$BUILDDIR/ofrak_io" \
   "$BUILDDIR/ofrak_patch_maker"

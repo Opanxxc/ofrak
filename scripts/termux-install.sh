@@ -66,8 +66,10 @@ install_source_build() {
   if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/python/pyproject.toml" ]; then
     die "LIEF python bindings not found in extracted source"
   fi
-  pip install "$HOME/lief-src/api/python" \
-    || { pip install scikit-build-core ninja; pip install --no-build-isolation "$HOME/lief-src/api/python"; }
+  # Use Termux's own ninja/cmake (pip ninja wheel doesn't exist for android)
+  pkg install -y ninja re2c 2>/dev/null || true
+  pip install scikit-build-core
+  pip install --no-build-isolation "$HOME/lief-src/api/python"
   if [[ -n "$SRC_MODE" ]]; then
     pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
     pip install "$SRC_MODE/ofrak_core"
