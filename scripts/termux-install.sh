@@ -73,6 +73,17 @@ install_source_build() {
   pip install scikit-build-core tomli pydantic
   pip install -r "$HOME/lief-src/api/python/build-requirements.txt" 2>/dev/null || true
   pip install --no-build-isolation "$HOME/lief-src/api/python"
+  # keystone-engine 0.9.2 sets cmake_policy(CMP0051 OLD) which CMake 4 rejects.
+  echo "[*] Patching & building keystone-engine (CMake 4 compat)..."
+  KSDIR="$HOME/ks-src"
+  rm -rf "$KSDIR" && mkdir -p "$KSDIR" && cd "$KSDIR"
+  pip download "keystone-engine==0.9.2" --no-deps --no-binary :all: -d "$KSDIR"
+  tar xf keystone-engine-*.tar.gz
+  KSSRC=$(find "$KSDIR" -maxdepth 1 -type d -name 'keystone-engine-*' | head -1)
+  grep -rl 'cmake_policy(SET CMP' "$KSSRC" | while read -r f; do
+    sed -i 's/cmake_policy(SET \(CMP[0-9]*\) OLD)/cmake_policy(SET \1 NEW)/g' "$f"
+  done
+  pip install --no-build-isolation "$KSSRC"
   if [[ -n "$SRC_MODE" ]]; then
     pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
     pip install "$SRC_MODE/ofrak_core"
