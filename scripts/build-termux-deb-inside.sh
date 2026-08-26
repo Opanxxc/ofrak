@@ -88,6 +88,12 @@ python3 -m pip install \
   "$BUILDDIR/ofrak_patch_maker"
 python3 -m pip install "$BUILDDIR/ofrak_core"
 
+echo "[*] Installing optional plugins (angr, capstone)..."
+# ofrak_angr: angr-based disassembly backend (open source, very useful)
+# ofrak_capstone: capstone-based disassembly (lightweight, no LLVM needed)
+python3 -m pip install ofrak_angr ofrak_capstone 2>&1 | tail -5 || \
+  echo "[!] Plugin install failed (core still works)"
+
 echo "[*] Verifying install..."
 command -v ofrak >/dev/null || { echo "[-] ofrak binary missing"; ls "$PREFIX/bin" | grep -i ofr || true; exit 1; }
 ofrak list 2>/dev/null | head -5 || echo "[!] ofrak list failed (may be py3.14 compat, deb still valid)"

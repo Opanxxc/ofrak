@@ -62,18 +62,52 @@ chmod +x OFRAK-*-x86_64.AppImage
 
 Both packages bundle a standalone Python 3.13 interpreter and the pre-built GUI frontend — no system Python or Node.js required.
 
-**Install on Android via Termux:**
+**Install on Android via Termux (recommended):**
 
+Option A — One-liner (auto-downloads prebuilt .deb, ~1 min):
 ```bash
-curl -sL https://raw.githubusercontent.com/Opanxxc/ofrak/master/scripts/termux-install.sh -o termux-install.sh
-bash termux-install.sh
+curl -sL https://raw.githubusercontent.com/Opanxxc/ofrak/master/scripts/termux-install.sh | bash
 ```
 
-By default the installer downloads a **prebuilt Termux .deb (aarch64)** — installs in ~1 minute, no compilation. If no prebuilt package is available it automatically falls back to on-device compilation (20-40 min). Use `bash termux-install.sh --build` to force compiling from PyPI, or `--source <dir>` to build from a local checkout.
-
+Option B — Manual install with wget:
 ```bash
+# 1. Install Termux from F-Droid (not Play Store)
+# 2. Open Termux and run:
+pkg update && pkg install git
+
+# 3. Download the latest prebuilt .deb
+cd $HOME
+wget -q https://github.com/Opanxxc/ofrak/releases/download/continuous/ofrak_3.4.0_aarch64.deb
+
+# 4. Install it
+apt install -y ./ofrak_3.4.0_aarch64.deb
+
+# 5. Accept the community license (first run only)
 ofrak license --community --i-agree
-ofrak gui        # open http://127.0.0.1:8888 in your browser
+
+# 6. Launch the GUI
+ofrak gui
+# Open http://127.0.0.1:8888 in your phone browser
+
+# Or use the terminal menu (no browser needed):
+ofrak-menu
+```
+
+The Termux .deb includes:
+- **ofrak core** — unpack, identify, modify, repack
+- **ofrak_angr** — angr-based symbolic analysis backend
+- **ofrak_capstone** — capstone disassembly engine
+- **GUI frontend** — web-based resource explorer
+- **TUI menu** — `ofrak-menu` for terminal-only usage
+
+If you need Ghidra integration, install it manually:
+```bash
+pip install ofrak_ghidra
+```
+
+**Build from source (20-40 min on device):**
+```bash
+curl -sL https://raw.githubusercontent.com/Opanxxc/ofrak/master/scripts/termux-install.sh | bash -s -- --build
 ```
 
 See ([Install](docs/install/index.md)) for detailed installation instructions.
