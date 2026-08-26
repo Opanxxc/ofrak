@@ -61,7 +61,8 @@ if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/p
 fi
 # Use Termux's own ninja/cmake (pip ninja wheel doesn't exist for android)
 python3 -m pip install scikit-build-core
-python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"python3 -m pip install \
+python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"
+python3 -m pip install \
   "$BUILDDIR/ofrak_type" \
   "$BUILDDIR/ofrak_io" \
   "$BUILDDIR/ofrak_patch_maker"
