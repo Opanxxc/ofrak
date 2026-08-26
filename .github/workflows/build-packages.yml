@@ -346,7 +346,7 @@ jobs:
             termux/termux-docker:aarch64 \
             bash /work/scripts/build-termux-deb-inside.sh)
           docker start -a "$CONTAINER_ID" || EXIT_CODE=$?
-          docker cp "$CONTAINER_ID":/root/ofrak_*.deb ./ || true
+          docker cp "$CONTAINER_ID":/data/data/com.termux/files/home/ofrak_*.deb ./ || true
           docker rm -f "$CONTAINER_ID" >/dev/null 2>&1 || true
           ls -la ofrak_*_aarch64.deb
           if [ -n "${EXIT_CODE:-}" ] && [ "$EXIT_CODE" -ne 0 ]; then exit "$EXIT_CODE"; fi
