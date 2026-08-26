@@ -18,9 +18,16 @@ ok()   { echo -e "\033[0;32m[PASS]\033[0m $*"; PASS=$((PASS+1)); }
 bad()  { echo -e "\033[0;31m[FAIL]\033[0m $*"; FAIL=$((FAIL+1)); }
 check(){ if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; echo "    debug:"; eval "$2" 2>&1 | head -5; fi }
 
-echo "[*] Installing runtime deps..."
-pkg update -y
-pkg install -y python libffi openssl ncurses readline zlib dpkg
+echo "[*] Configuring official repo..."
+mkdir -p "$PREFIX/etc/apt/sources.list.d"
+rm -f "$PREFIX/etc/apt/sources.list.d/"*.list
+cat > "$PREFIX/etc/apt/sources.list" << 'REPO'
+deb https://packages.termux.org/apt/termux-main stable main
+REPO
+
+pkg update -y 2>/dev/null || true
+pkg install -y python libffi openssl ncurses readline zlib dpkg 2>/dev/null || \
+apt-get install -y python libffi openssl ncurses readline zlib 2>/dev/null || true
 
 DEB=$(ls /work/ofrak_*_aarch64.deb | head -1)
 [[ -n "$DEB" ]] || { bad "No .deb found in /work"; exit 1; }
