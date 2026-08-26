@@ -123,10 +123,13 @@ for name in pip setuptools wheel ensurepip _distutils_hack distutils \
             tkinter turtledemo idlelib lib2to3; do
   find "$SP_DIR" -maxdepth 1 -name "${name}*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
 done
-# Remove .pyc, __pycache__, README
+# Remove .pyc, __pycache__, README, and broken .pth files
 find "$SP_DIR" -name '*.pyc' -delete 2>/dev/null || true
 find "$SP_DIR" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
 rm -f "$SP_DIR/README.txt" "$SP_DIR/README"
+# Remove .pth files that reference deleted modules (distutils-precedence.pth etc.)
+rm -f "$SP_DIR/distutils-precedence.pth" "$SP_DIR/setuptools.pth"
+find "$SP_DIR" -name '*.pth' -exec grep -l '_distutils_hack\|pkg_resources' {} + 2>/dev/null | xargs rm -f 2>/dev/null || true
 echo "[*] After cleanup: $(ls "$SP_DIR" | wc -l) packages in deb"
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
