@@ -56,7 +56,11 @@ install_source_build() {
   export PIP_CONSTRAINT="$HOME/.ofrak-pip-constraints.txt"
   pip install --upgrade "pip" "setuptools<81" wheel
   if [[ -n "$SRC_MODE" ]]; then
-    pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
+    # LIEF: PyPI sdist is a wheel-only stub that refuses 'android - aarch64'.
+  echo "[*] Pre-building LIEF from real source..."
+  pip install "https://github.com/lief-project/LIEF/archive/refs/tags/1.0.0.tar.gz" \
+    || pip install "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz"
+  pip install "$SRC_MODE/ofrak_type" "$SRC_MODE/ofrak_io" "$SRC_MODE/ofrak_patch_maker"
     pip install "$SRC_MODE/ofrak_core"
   else
     # Install ofrak CORE from this fork (modern dependency pins, PyPI only has
@@ -65,7 +69,10 @@ install_source_build() {
     info "Installing helper packages from PyPI..."
     pip install ofrak-type ofrak-io ofrak-patch-maker
     info "Installing ofrak core from GitHub fork (latest)..."
-    pip install --pre "ofrack @ git+https://github.com/$REPO.git#subdirectory=ofrak_core"
+    # LIEF stub workaround for git-based installs too
+  pip install "https://github.com/lief-project/LIEF/archive/refs/tags/1.0.0.tar.gz" \
+    || pip install "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz"
+  pip install --pre "ofrack @ git+https://github.com/$REPO.git#subdirectory=ofrak_core"
   fi
 }
 

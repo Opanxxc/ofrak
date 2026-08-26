@@ -46,6 +46,11 @@ mkdir -p "$HOME/scripts"
 cp /work/scripts/ofrak-menu.sh "$HOME/scripts/" 2>/dev/null || true
 
 echo "[*] Compiling & installing OFRAK packages (this takes a while)..."
+# LIEF: PyPI sdist is a wheel-only stub that refuses 'android - aarch64'.
+# Install the REAL source from GitHub so it compiles locally with cmake.
+echo "[*] Pre-building LIEF from real source (bypasses PyPI stub)..."
+python3 -m pip install "https://github.com/lief-project/LIEF/archive/refs/tags/1.0.0.tar.gz" \
+  || python3 -m pip install "https://github.com/lief-project/LIEF/archive/refs/tags/0.16.1.tar.gz"
 python3 -m pip install \
   "$BUILDDIR/ofrak_type" \
   "$BUILDDIR/ofrak_io" \
