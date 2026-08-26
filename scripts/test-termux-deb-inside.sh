@@ -16,7 +16,7 @@ export DEBIAN_FRONTEND=noninteractive
 PASS=0; FAIL=0
 ok()   { echo -e "\033[0;32m[PASS]\033[0m $*"; PASS=$((PASS+1)); }
 bad()  { echo -e "\033[0;31m[FAIL]\033[0m $*"; FAIL=$((FAIL+1)); }
-check(){ if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; fi }
+check(){ if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; echo "    debug:"; eval "$2" 2>&1 | head -5; fi }
 
 echo "[*] Installing runtime deps..."
 pkg update -y
@@ -29,6 +29,14 @@ apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB"
 
 echo ""
 echo "========== OFRAK TERMUX AUTO-TEST =========="
+
+# Debug: show what's in the deb
+PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo '3.14')
+SP_DIR="$PREFIX/lib/python$PYVER/site-packages"
+echo "[*] site-packages contents: $(ls "$SP_DIR" 2>/dev/null | wc -l) dirs"
+ls "$SP_DIR" 2>/dev/null | head -20
+echo "[*] ofrak binary: $(readlink -f $(which ofrak) 2>/dev/null || echo 'N/A')"
+python3 -c 'import ofrak' 2>&1 | head -5 || echo "[!] import failed"
 
 check "ofrak binary in PATH"          "command -v ofrak"
 check "ofrak-menu (TUI) in PATH"      "command -v ofrak-menu"
