@@ -84,7 +84,7 @@ python3 -m pip install \
 python3 -m pip install "$BUILDDIR/ofrak_core"
 
 echo "[*] Verifying install..."
-command -v ofrack >/dev/null || { echo "[-] ofrack binary missing"; exit 1; }
+command -v ofrak >/dev/null || { echo "[-] ofrak binary missing"; ls "$PREFIX/bin" | grep -i ofr || true; exit 1; }
 ofrak list | head -5 || true
 
 # --- Stage into Termux filesystem layout ----------------------
@@ -100,6 +100,7 @@ echo "[*] Staging site-packages..."
 cp -r "$SP" "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
+ln -sf ofrak "$STAGE/data/data/com.termux/files/usr/bin/ofrack"
 cp "$HOME/scripts/ofrak-menu.sh" "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
 chmod +x "$STAGE/data/data/com.termux/files/usr/bin/ofrak-menu"
 
