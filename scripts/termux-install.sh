@@ -50,6 +50,8 @@ install_source_build() {
   export LDFLAGS="-L$PREFIX/lib"
   # maturin (cryptography rust builds) needs Android API level on Termux
   export ANDROID_API_LEVEL=24
+  # CMake >= 4 rejects projects with old cmake_minimum_required (keystone etc.)
+  export CMAKE_POLICY_VERSION_MINIMUM=3.5
   # New setuptools (>=81) removed pkg_resources which old sdists import at build time.
   # Pin it via PIP_CONSTRAINT so pip build isolation respects it too.
   printf 'setuptools<81\n' > "$HOME/.ofrak-pip-constraints.txt"
