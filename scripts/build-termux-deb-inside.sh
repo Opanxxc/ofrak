@@ -124,9 +124,9 @@ Homepage: https://github.com/Opanxxc/ofrak
 EOF
 
 echo "[*] Building .deb..."
-cd "$HOME"
-if dpkg-deb --root-owner-group --build "$STAGE" "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb" 2>/dev/null; then :;
-else dpkg-deb --build "$STAGE" "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"; fi
-ls -la "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"
-cp "ofrak_${OFRAK_DEB_VERSION}_aarch64.deb" /work/
-echo "[+] DONE: $(ls /work/ofrak_*_aarch64.deb)"
+# Build deb in /work (the mounted host workspace) so cp isn't needed.
+DEB_OUT="/work/ofrak_${OFRAK_DEB_VERSION}_aarch64.deb"
+if dpkg-deb --root-owner-group --build "$STAGE" "$DEB_OUT" 2>/dev/null; then :;
+else dpkg-deb --build "$STAGE" "$DEB_OUT"; fi
+ls -la "$DEB_OUT"
+echo "[+] DONE: $DEB_OUT"
