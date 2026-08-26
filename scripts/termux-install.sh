@@ -68,7 +68,7 @@ install_source_build() {
   fi
   # Use Termux's own ninja/cmake (pip ninja wheel doesn't exist for android)
   pkg install -y ninja re2c 2>/dev/null || true
-  pip install scikit-build-core tomli
+  pip install scikit-build-core tomli pydantic
   pip install -r "$HOME/lief-src/api/python/build-requirements.txt" 2>/dev/null || true
   pip install --no-build-isolation "$HOME/lief-src/api/python"
   if [[ -n "$SRC_MODE" ]]; then

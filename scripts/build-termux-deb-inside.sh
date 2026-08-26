@@ -60,7 +60,7 @@ if [ ! -f "$HOME/lief-src/api/python/setup.py" ] && [ ! -f "$HOME/lief-src/api/p
   echo "[-] LIEF python bindings not found"; ls "$HOME/lief-src/api/" || true; exit 1
 fi
 # Use Termux's own ninja/cmake (pip ninja wheel doesn't exist for android)
-python3 -m pip install scikit-build-core tomli
+python3 -m pip install scikit-build-core tomli pydantic
 python3 -m pip install -r "$HOME/lief-src/api/python/build-requirements.txt" 2>/dev/null || true
 python3 -m pip install --no-build-isolation "$HOME/lief-src/api/python"
 python3 -m pip install \
