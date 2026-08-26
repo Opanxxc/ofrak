@@ -103,36 +103,51 @@ mkdir -p "$STAGE/data/data/com.termux/files/usr/lib/python$PYVER" \
 
 echo "[*] Staging site-packages (ofrak only)..."
 SP_DIR="$STAGE/data/data/com.termux/files/usr/lib/python$PYVER/site-packages"
-# Use pip to list only ofrak's own installed packages (no system overlap)
-python3 -m pip freeze --user 2>/dev/null > "$HOME/installed-pkgs.txt" || true
-# Copy ALL site-packages, then remove system conflicts
 mkdir -p "$SP_DIR"
 cp -r "$SP/"* "$SP_DIR/" 2>/dev/null || true
-# Aggressive blacklist: remove everything that ships with Termux packages
-for name in pip pip-"*" setuptools setuptools-"*" wheel wheel-"*" \
-            ensurepip ensurepip-"*" _distutils_hack distutils pkg_resources \
-            tkinter turtledemo idlelib email test test_"*" \
-            lib2to3 _colorsys _compat_pickle _compression _markupbase \
-            _pylong _scproxy dbm idle_test imaplib imghdr mailcap \
-            mhlib nntplib pipes sndhdr sunau telnetlib uu whatchangediff \
-            __phello__"_*" http server _osx_support \
-            cryptography cffi _cffi_backend; do
+
+# ── Aggressive blacklist: remove EVERYTHING that ships with Termux packages ──
+# These conflict with system packages and cause dpkg errors.
+BLACKLIST_PKGS=(
+  pip setuptools wheel ensurepip
+  _distutils_hack distutils pkg_resources
+  tkinter turtledemo idlelib lib2to3
+  email test test_ pydoc
+  _colorsys _compat_pickle _compression _markupbase
+  _pylong _scproxy dbm idle_test imaplib imghdr mailcap
+  mhlib nntplib pipes sndhdr sunau telnetlib uu whatchangediff
+  __phello__ http server _osx_support
+  cryptography cffi _cffi_backend
+)
+for name in "${BLACKLIST_PKGS[@]}"; do
+  # Remove directory if it exists
   rm -rf "$SP_DIR/$name" 2>/dev/null || true
-done
-# Remove dist-info for conflicting + abi3-incompatible packages
-for name in pip setuptools wheel ensurepip _distutils_hack distutils \
-            tkinter turtledemo idlelib lib2to3 \
-            cryptography cffi _cffi_backend; do
+  # Also remove any files matching name* (e.g. _cffi_backend.cpython-314-*.so)
+  find "$SP_DIR" -maxdepth 1 \( -name "$name" -o -name "${name}.*" \) -exec rm -rf {} + 2>/dev/null || true
+  # Remove dist-info for the package
   find "$SP_DIR" -maxdepth 1 -name "${name}*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
 done
-# Remove .pyc, __pycache__, README, and broken .pth files
+
+# Remove ALL .so files for abi3-incompatible packages (catch python-tagged ones)
+find "$SP_DIR" -maxdepth 1 -name '_cffi_backend*.so' -delete 2>/dev/null || true
+find "$SP_DIR" -maxdepth 1 -name '_cffi_backend*.cpython-*' -delete 2>/dev/null || true
+
+# Remove .pyc, __pycache__, README files
 find "$SP_DIR" -name '*.pyc' -delete 2>/dev/null || true
 find "$SP_DIR" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
-rm -f "$SP_DIR/README.txt" "$SP_DIR/README"
+find "$SP_DIR" -maxdepth 1 -name 'README*' -type f -delete 2>/dev/null || true
+rm -f "$SP_DIR/README.txt" "$SP_DIR/README" "$SP_DIR/README.md"
+
 # Remove .pth files that reference deleted modules (distutils-precedence.pth etc.)
-rm -f "$SP_DIR/distutils-precedence.pth" "$SP_DIR/setuptools.pth"
-find "$SP_DIR" -name '*.pth' -exec grep -l '_distutils_hack\|pkg_resources' {} + 2>/dev/null | xargs rm -f 2>/dev/null || true
+find "$SP_DIR" -maxdepth 1 -name '*.pth' -delete 2>/dev/null || true
+
+# Remove any remaining dist-info for blacklisted packages
+for name in "${BLACKLIST_PKGS[@]}"; do
+  find "$SP_DIR" -maxdepth 1 -name "${name}*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
+done
+
 echo "[*] After cleanup: $(ls "$SP_DIR" | wc -l) packages in deb"
+
 # Ship the CLI wrapper + terminal UI menu
 cp "$PREFIX/bin/ofrak" "$STAGE/data/data/com.termux/files/usr/bin/ofrak"
 ln -sf ofrak "$STAGE/data/data/com.termux/files/usr/bin/ofrack"
@@ -147,7 +162,7 @@ Priority: optional
 Architecture: aarch64
 Installed-Size: $(du -sk "$STAGE/data" | cut -f1)
 Maintainer: Opanxxc <opanxxc@users.noreply.github.com>
-Depends: python (>= ${PYVER}), python-pip, libffi, openssl, ncurses, readline, zlib
+Depends: python (>= ${PYVER}), python-pip, libffi, openssl, ncurses, readline, zlib, rust, binutils
 Description: OFRAK - unpack, modify, and repack binaries (Termux build)
  Open Firmware Reverse Analysis Konsole. Binary analysis and
  modification platform with web GUI and Python API.
@@ -162,8 +177,11 @@ mkdir -p "$STAGE/DEBIAN"
 cat > "$STAGE/DEBIAN/postinst" << 'POSTINST'
 #!/data/data/com.termux/files/usr/bin/env bash
 set -e
-echo "[*] Installing cryptography (pip, abi3 incompatible with py3.14)..."
-"$PREFIX/bin/python3" -m pip install --no-cache-dir cryptography cffi 2>/dev/null || true
+PREFIX=/data/data/com.termux/files/usr
+echo "[*] Installing cryptography + cffi (pip, abi3 incompatible with py3.14)..."
+export PATH="$PREFIX/bin:$PATH"
+"$PREFIX/bin/python3" -m pip install --no-cache-dir --no-build-isolation cffi cryptography 2>&1 | tail -5 || \
+  echo "[!] cryptography install failed - run manually: pip install cffi cryptography"
 echo "[+] postinst done"
 POSTINST
 chmod 755 "$STAGE/DEBIAN/postinst"

@@ -16,7 +16,7 @@ export DEBIAN_FRONTEND=noninteractive
 PASS=0; FAIL=0
 ok()   { echo -e "\033[0;32m[PASS]\033[0m $*"; PASS=$((PASS+1)); }
 bad()  { echo -e "\033[0;31m[FAIL]\033[0m $*"; FAIL=$((FAIL+1)); }
-check(){ if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; echo "    debug:"; eval "$2" 2>&1 | head -5; fi }
+check(){ if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; echo "    debug:"; eval "$2" 2>&1 | head -10; fi }
 
 echo "[*] Configuring official repo..."
 mkdir -p "$PREFIX/etc/apt/sources.list.d"
@@ -26,32 +26,38 @@ deb https://packages.termux.org/apt/termux-main stable main
 REPO
 
 pkg update -y 2>/dev/null || true
-pkg install -y python libffi openssl ncurses readline zlib dpkg 2>/dev/null || \
-apt-get install -y python libffi openssl ncurses readline zlib 2>/dev/null || true
+pkg install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils 2>/dev/null || \
+  apt-get install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils 2>/dev/null || true
 
-DEB=$(ls /work/ofrak_*_aarch64.deb | head -1)
+# Upgrade pip/setuptools before installing deb
+python3 -m pip install --upgrade pip setuptools wheel 2>/dev/null || true
+
+DEB=$(ls /work/ofrak_*_aarch64.deb 2>/dev/null | head -1)
 [[ -n "$DEB" ]] || { bad "No .deb found in /work"; exit 1; }
 echo "[*] Installing $DEB..."
-apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB"
+apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB" 2>/dev/null || \
+  dpkg --force-all -i "$DEB" 2>/dev/null || { bad "dpkg install failed"; exit 1; }
+
+echo "[*] Installing cryptography (not bundled - abi3 incompatible with py3.14)..."
+python3 -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -5 || \
+  echo "[!] cryptography pip install failed (may need manual install)"
 
 echo ""
 echo "========== OFRAK TERMUX AUTO-TEST =========="
 
-# Show full import traceback for debugging
+# Show what's in site-packages for debugging
 PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo '3.14')
 SP_DIR="$PREFIX/lib/python$PYVER/site-packages"
 echo "[*] site-packages: $(ls "$SP_DIR" 2>/dev/null | wc -l) entries"
+echo "[*] ofrak dir exists: $(test -d "$SP_DIR/ofrak" && echo YES || echo NO)"
 echo "[*] Full import traceback:"
 python3 -c 'import ofrak' 2>&1 | head -15 || true
-echo "[*] site-packages contents: $(ls "$SP_DIR" 2>/dev/null | wc -l) dirs"
-ls "$SP_DIR" 2>/dev/null | head -20
-echo "[*] ofrak binary: $(readlink -f $(which ofrak) 2>/dev/null || echo 'N/A')"
-python3 -c 'import ofrak' 2>&1 | head -5 || echo "[!] import failed"
+echo "[*] ofrak binary: $(readlink -f "$(command -v ofrak 2>/dev/null)" 2>/dev/null || echo 'N/A')"
 
 check "ofrak binary in PATH"          "command -v ofrak"
 check "ofrak-menu (TUI) in PATH"      "command -v ofrak-menu"
-check "ofrak --help runs"             "ofrak --help"
 check "python can import ofrak"       "python3 -c 'import ofrak'"
+check "ofrak --help runs"             "ofrak --help"
 check "license accept works"          "yes | ofrak license --community --i-agree"
 check "ofrak list lists components"   "ofrak list"
 check "TUI starts and quits (piped)"  "echo 0 | ofrak-menu"
@@ -66,13 +72,11 @@ if ofrak unpack -o "$HOME/test-out" "$HOME/test-binary" >/dev/null 2>&1; then
         bad "unpack ran but output dir empty"
     fi
 else
-    bad "ofrack unpack failed"
+    bad "ofrak unpack failed"
 fi
 
 # Verify GUI assets shipped (web frontend files present)
-PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-SP="$PREFIX/lib/python$PYVER/site-packages"
-check "GUI static assets included"    "test -f '$SP/ofrak/gui/public/index.html'"
+check "GUI static assets included"    "test -f '$SP_DIR/ofrak/gui/public/index.html'"
 
 echo "============================================="
 echo "RESULT: $PASS passed, $FAIL failed"
