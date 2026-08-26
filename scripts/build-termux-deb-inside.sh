@@ -115,12 +115,14 @@ for name in pip pip-"*" setuptools setuptools-"*" wheel wheel-"*" \
             lib2to3 _colorsys _compat_pickle _compression _markupbase \
             _pylong _scproxy dbm idle_test imaplib imghdr mailcap \
             mhlib nntplib pipes sndhdr sunau telnetlib uu whatchangediff \
-            __phello__"_*" http server _osx_support; do
+            __phello__"_*" http server _osx_support \
+            cryptography cffi _cffi_backend; do
   rm -rf "$SP_DIR/$name" 2>/dev/null || true
 done
-# Remove dist-info for conflicting packages
+# Remove dist-info for conflicting + abi3-incompatible packages
 for name in pip setuptools wheel ensurepip _distutils_hack distutils \
-            tkinter turtledemo idlelib lib2to3; do
+            tkinter turtledemo idlelib lib2to3 \
+            cryptography cffi _cffi_backend; do
   find "$SP_DIR" -maxdepth 1 -name "${name}*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
 done
 # Remove .pyc, __pycache__, README, and broken .pth files
@@ -154,6 +156,17 @@ Description: OFRAK - unpack, modify, and repack binaries (Termux build)
  then 'ofrak gui' and open http://127.0.0.1:8888
 Homepage: https://github.com/Opanxxc/ofrak
 EOF
+
+# Create postinst to pip-install cryptography (abi3 incompatible with py3.14 on Termux)
+mkdir -p "$STAGE/DEBIAN"
+cat > "$STAGE/DEBIAN/postinst" << 'POSTINST'
+#!/data/data/com.termux/files/usr/bin/env bash
+set -e
+echo "[*] Installing cryptography (pip, abi3 incompatible with py3.14)..."
+"$PREFIX/bin/python3" -m pip install --no-cache-dir cryptography cffi 2>/dev/null || true
+echo "[+] postinst done"
+POSTINST
+chmod 755 "$STAGE/DEBIAN/postinst"
 
 echo "[*] Building .deb..."
 # Build in HOME (guaranteed writable), workflow will docker-cp it out.
