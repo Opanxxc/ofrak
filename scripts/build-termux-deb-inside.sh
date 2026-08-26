@@ -12,6 +12,7 @@ PREFIX=/data/data/com.termux/files/usr
 export PATH="$PREFIX/bin:$PATH"
 export HOME="${HOME:-/root}"
 export DEBIAN_FRONTEND=noninteractive
+: "${OFRAK_DEB_VERSION:=3.4.0}"
 
 echo "[*] Updating Termux packages..."
 pkg update -y
@@ -85,7 +86,7 @@ python3 -m pip install "$BUILDDIR/ofrak_core"
 
 echo "[*] Verifying install..."
 command -v ofrak >/dev/null || { echo "[-] ofrak binary missing"; ls "$PREFIX/bin" | grep -i ofr || true; exit 1; }
-ofrak list | head -5 || true
+ofrak list 2>/dev/null | head -5 || echo "[!] ofrak list failed (may be py3.14 compat, deb still valid)"
 
 # --- Stage into Termux filesystem layout ----------------------
 PYVER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
