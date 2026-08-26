@@ -117,7 +117,7 @@ BLACKLIST_PKGS=(
   _pylong _scproxy dbm idle_test imaplib imghdr mailcap
   mhlib nntplib pipes sndhdr sunau telnetlib uu whatchangediff
   __phello__ http server _osx_support
-  cryptography cffi _cffi_backend
+  cryptography cffi _cffi_backend maturin
 )
 for name in "${BLACKLIST_PKGS[@]}"; do
   # Remove directory if it exists
@@ -178,10 +178,12 @@ cat > "$STAGE/DEBIAN/postinst" << 'POSTINST'
 #!/data/data/com.termux/files/usr/bin/env bash
 set -e
 PREFIX=/data/data/com.termux/files/usr
-echo "[*] Installing cryptography + cffi (pip, abi3 incompatible with py3.14)..."
 export PATH="$PREFIX/bin:$PATH"
-"$PREFIX/bin/python3" -m pip install --no-cache-dir --no-build-isolation cffi cryptography 2>&1 | tail -5 || \
-  echo "[!] cryptography install failed - run manually: pip install cffi cryptography"
+echo "[*] Installing maturin (Rust build backend for cryptography)..."
+"$PREFIX/bin/python3" -m pip install --no-cache-dir maturin 2>/dev/null || true
+echo "[*] Installing cryptography + cffi (pip, abi3 incompatible with py3.14)..."
+"$PREFIX/bin/python3" -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -5 || \
+  echo "[!] cryptography install failed - run manually: pip install maturin cffi cryptography"
 echo "[+] postinst done"
 POSTINST
 chmod 755 "$STAGE/DEBIAN/postinst"

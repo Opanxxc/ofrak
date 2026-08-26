@@ -30,6 +30,8 @@ pkg install -y python python-pip libffi openssl ncurses readline zlib dpkg rust 
   apt-get install -y python python-pip libffi openssl ncurses readline zlib dpkg rust binutils 2>/dev/null || true
 
 # Upgrade pip/setuptools before installing deb
+export PIP_CONSTRAINT="$HOME/.pip-constraints.txt"
+printf 'setuptools<81\n' > "$HOME/.pip-constraints.txt" 2>/dev/null || true
 python3 -m pip install --upgrade pip setuptools wheel 2>/dev/null || true
 
 DEB=$(ls /work/ofrak_*_aarch64.deb 2>/dev/null | head -1)
@@ -37,6 +39,9 @@ DEB=$(ls /work/ofrak_*_aarch64.deb 2>/dev/null | head -1)
 echo "[*] Installing $DEB..."
 apt install -y "$DEB" 2>/dev/null || dpkg -i --force-overwrite "$DEB" 2>/dev/null || \
   dpkg --force-all -i "$DEB" 2>/dev/null || { bad "dpkg install failed"; exit 1; }
+
+echo "[*] Installing maturin (needed by cryptography build on Termux)..."
+python3 -m pip install --no-cache-dir maturin 2>&1 | tail -3 || true
 
 echo "[*] Installing cryptography (not bundled - abi3 incompatible with py3.14)..."
 python3 -m pip install --no-cache-dir cffi cryptography 2>&1 | tail -5 || \

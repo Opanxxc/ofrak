@@ -136,6 +136,11 @@ if ! command -v ofrak-menu >/dev/null 2>&1; then
     && info "Installed terminal menu: run 'ofrak-menu'"
 fi
 
+# --- Install cryptography (needed by ofrak license module) -----------
+info "Installing maturin + cryptography for license verification..."
+pip install --no-cache-dir maturin 2>/dev/null || true
+pip install --no-cache-dir cffi cryptography 2>/dev/null || warn "cryptography install failed - run: pip install maturin cffi cryptography"
+
 # --- License hint + verify ------------------------------------
 command -v ofrak >/dev/null 2>&1 || die "ofrak binary not found in PATH. Check output above."
 
